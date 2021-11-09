@@ -1,7 +1,6 @@
 package engine.application
 
 import engine.application.events.*
-import engine.console.CVar
 import engine.console.Console
 import logging.Log
 import org.lwjgl.glfw.GLFW.*
@@ -14,11 +13,11 @@ class Application(
     private val _logic: WindowCallbacks
 ) {
 
-    val CanvasW = 900
-    val CanvasH = 600
-
     private val _inputEventQueue = ArrayBlockingQueue<InputEvent>(QueueCapacity, true)
-    var window = Window("Freehand", CanvasW, CanvasH, false)
+    private val window = Window("Freehand")
+
+    val CanvasW by window::width
+    val CanvasH by window::height
 
     var isRunning = false
         private set
@@ -28,12 +27,30 @@ class Application(
     fun initialize() {
         Log.info("Application", "Initializing window...")
         Log.indent++
-        val vSync = _console.getCVar("sys_VSync")!!
 
-        window.initialize()
-        window.vSync = vSync.clean().Flag
-        vSync.Listeners.add { vSync: CVar -> window.vSync = vSync.clean().Flag }
+        _console.registerCVarIfAbsent("app_Width", 900)
+        _console.registerCVarIfAbsent("app_Height", 600)
+        _console.registerCVarIfAbsent("app_Resizable", false)
+
+        val vSync = _console.getCVar("sys_VSync")!!
+        val windW = _console.getCVar("app_Width")!!
+        val windH = _console.getCVar("app_Height")!!
+        val resizable = _console.getCVar("app_Resizable")!!
+
+        window.initialize(
+            vSync.clean().Flag,
+            windW.clean().Value,
+            windH.clean().Value,
+            resizable.clean().Flag
+        )
+
+        vSync.Listeners.add { vSync -> window.vSync = vSync.clean().Flag }
+        windW.Listeners.add { windW -> window.width = windW.clean().Value }
+        windH.Listeners.add { windH -> window.height = windH.clean().Value }
+        resizable.Listeners.add { vSync -> window.resizable = resizable.clean().Flag }
+
         setCallbacks()
+
         Log.indent--
         Log.info("Application", "Initialized window.")
 

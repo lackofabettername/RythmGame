@@ -66,6 +66,8 @@ class Engine(
 
     private fun initialize() {
         run {
+            Locale.setDefault(Locale.ENGLISH) // Stupid Swedish computer uses , instead of . for floats
+
             val time = DateTimeFormatter.ofPattern("yyyy/mm/dd HH:mm:ss").format(LocalDateTime.now())
 
             //val md = MessageDigest.getInstance("SHA-1")
@@ -80,11 +82,11 @@ class Engine(
 
         Log.info("Engine", "Initializing subsystems...")
         Log.indent++
-        Locale.setDefault(Locale.ENGLISH) // Stupid Swedish computer uses , instead of . for floats
 
-        FileSystem.loadConfiguration()
-        Console.registerCVarIfAbsent("sys_maxRenderFPS", 0) // Uncapped
-        Console.registerCVarIfAbsent("sys_VSync", true)
+        FileSystem.loadConfiguration(Console)
+        Console.registerCVarIfAbsent("sys_MaxRenderFPS", 0) // Uncapped
+        Console.registerCVarIfAbsent("sys_VSync", false)
+
         Console.initialize()
         Window.initialize()
         Network.initialize()
@@ -92,6 +94,7 @@ class Engine(
         //_server.initialize()
         _client?.initialize()
         _isRunning = true
+
         Log.indent--
         Log.info("Engine", "Initialization complete.")
     }
@@ -186,10 +189,10 @@ class Engine(
                 else -> {
                     val cvar = Console.getCVar(command.Text)
                     if (cvar != null) {
-                        if (command.Args.isNotEmpty()) {
-                            cvar.set(command.Args)
-                        } else {
-                            Log.info("Engine", "${cvar.get()}")
+                        when (command.Args.size) {
+                            0 -> Log.info("Engine", "${cvar.get()}")
+                            1 -> cvar.set(command.Args[0])
+                            else -> Log.warn("Engine", "Unknown command")
                         }
                     }
                 }
@@ -197,7 +200,7 @@ class Engine(
         }
     }
 
-    fun mainLoop() {
+    private fun mainLoop() {
 
         _isRunning = true
 
@@ -206,7 +209,7 @@ class Engine(
         var eventTime: Long
         var eventTimeLast = System.currentTimeMillis()
 
-        val maxFPS = Console.getCVar("sys_maxRenderFPS")!!
+        val maxFPS = Console.getCVar("sys_MaxRenderFPS")!!
         val vSync = Console.getCVar("sys_VSync")!!
         deltaTimeMin = if (!_isServerDedicated && maxFPS.Value > 0 && !vSync.Flag) {
             1000L / maxFPS.Value
@@ -220,7 +223,7 @@ class Engine(
             //  Core systems update
             // ---------------------
             _events.captureInputs() // Flush the input events once per frame...
-            FileSystem.writeConfiguration()
+            FileSystem.writeConfiguration(Console)
             if (maxFPS.Dirty || vSync.Dirty) {
                 if (!_isServerDedicated) {
                     deltaTimeMin = if (maxFPS.Value > 0 && !vSync.Flag) {
@@ -289,7 +292,7 @@ class Engine(
 }
 
 fun main() {
-    Log.logLevel = LogLevel.Trace
+    Log.logLevel = LogLevel.Debug
 
     val serverGameLogic = object : ServerGameLogic {
 

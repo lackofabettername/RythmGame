@@ -2,15 +2,21 @@
 
 package engine.files
 
+import engine.console.CVar
+import engine.console.CVarValueType
+import engine.console.Console
 import logging.Log
 import java.io.File
+import java.io.FileNotFoundException
+import java.io.IOException
 
 object FileSystem {
     //TODO: Check if file access is allowed when opening or closing.
     val RegisteredExtensions = HashMap(
         mapOf(
-            Pair("txt", FileType.Strings),
-            Pair("ser", FileType.Objects)
+            "txt" to FileType.Strings,
+            "ser" to FileType.Objects,
+            "CFG" to FileType.Strings,
         )
     )
     private val _files = HashMap<String, FileAccess>()
@@ -22,24 +28,32 @@ object FileSystem {
         _files.clear()
     }
 
-    fun openFile(fileName: String, mode: FileAccessMode, type: FileType) {
-        val fileIO = FileAccess(File(fileName), mode, type)
-        val preexisting = getFileAccessor(fileName)
-        if (preexisting != null) {
-            preexisting.close()
-            _files.replace(fileName, fileIO)
-        } else {
-            _files[fileName] = fileIO
+    fun openFile(fileName: String, mode: FileAccessMode, type: FileType): FileAccess? {
+        return try {
+            val fileIO = FileAccess(File(fileName), mode, type)
+            val preexisting = getFileAccessor(fileName)
+
+            if (preexisting != null) {
+                preexisting.close()
+                _files.replace(fileName, fileIO)
+            } else {
+                _files[fileName] = fileIO
+            }
+
+            fileIO
+        } catch (e: IOException) {
+            Log.error("FileSystem", "Could not open file $fileName", e)
+            null
         }
     }
 
     @JvmStatic
-    fun openFile(fileName: String, mode: FileAccessMode) {
+    fun openFile(fileName: String, mode: FileAccessMode): FileAccess? {
         //val extension = fileName.substring(fileName.lastIndexOf(".") + 1)
         val extension = File(fileName).extension
         val type = RegisteredExtensions.getOrDefault(extension, FileType.Unkown)
         if (type == FileType.Unkown) Log.warn("FileSystem", "Unknown fileExtension: .$extension")
-        openFile(fileName, mode, type)
+        return openFile(fileName, mode, type)
     }
 
     @JvmStatic
@@ -91,18 +105,54 @@ object FileSystem {
         }
     }
 
-    fun loadConfiguration() {
+    fun loadConfiguration(console: Console) {
         //TODO:
         // - Read console variables from a file.
         // - Undecided: Variables must already exist.
         // --- Defined by a game-specific manifest
         // --- or from some kind of core systems registry.
+
+        openFile("System.CFG", FileAccessMode.Reader)
+            ?.use { inp ->
+                var line = inp.readString()
+
+                while (line != null) {
+                    Log.debug("FileSystem", line)
+
+                    if (line.startsWith("CVar")) {
+                        val parts = line.split(", ")
+                        val name = parts[0].drop(5)
+                        val data = parts[2].dropLast(1)
+                        val cvar = when (parts[1]) {
+                            CVarValueType.Text.name -> CVar(name, data)
+                            CVarValueType.Value.name -> CVar(name, data.toInt())
+                            CVarValueType.Flag.name -> CVar(name, data.toBoolean())
+                            else -> null
+                        }
+                        if (cvar != null)
+                            console.registerCVar(cvar)
+                    }
+
+                    line = inp.readString()
+                }
+            }
     }
 
-    fun writeConfiguration() {
+    fun writeConfiguration(console: Console) {
         //TODO:
         // - Write out the settings of the engine or game to a file...
         // - Implement methods for saving out game state data?
+
+        openFile("System.CFG", FileAccessMode.Writer)
+            ?.use { out ->
+
+                //Print all CVars in alphabetical order
+                for (cvar in console.cVars.stream()
+                    .sorted { a, b -> a.Name.lowercase().compareTo(b.Name.lowercase()) })
+                {
+                    out.writeString("CVar{${cvar.Name}, ${cvar.Type}, ${cvar.get()}}")
+                }
+            }
     }
 
     private fun getFileAccessor(fileName: String): FileAccess? {

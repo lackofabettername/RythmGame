@@ -1,8 +1,15 @@
 package engine.console
 
+import logging.Log
+import java.io.Externalizable
+import java.io.ObjectInput
+import java.io.ObjectOutput
 import java.util.function.Consumer
 
-class CVar(var Name: String, val Type: CVarValueType) {
+class CVar(
+    var Name: String,
+    val Type: CVarValueType
+) {
     val Listeners = mutableListOf<Consumer<CVar>>()
 
     @Volatile
@@ -58,14 +65,26 @@ class CVar(var Name: String, val Type: CVarValueType) {
             CVarValueType.Value -> Value = data as Int
             CVarValueType.Flag -> Flag = data as Boolean
         }
+        Dirty = true
     }
 
     infix fun set(data: Any) {
-        when (data) {
-            is String -> Text = data
-            is Int -> Value = data
-            is Boolean -> Flag = data
+        when (Type) {
+            CVarValueType.Text -> Text = data.toString()
+            CVarValueType.Value -> Value = when (data) {
+                is Number -> data.toInt()
+                is String -> data.toInt()
+                is Boolean -> if (data) 1 else 0
+                else -> -1
+            }
+            CVarValueType.Flag -> Flag = when (data) {
+                is Boolean -> data
+                is Number -> data.toInt() > 0
+                is String -> data.toBoolean()
+                else -> false
+            }
         }
+        Dirty = true
     }
 
     fun get() = when (Type) {

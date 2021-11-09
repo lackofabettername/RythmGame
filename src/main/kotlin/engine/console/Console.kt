@@ -23,7 +23,7 @@ class Console() : AutoCloseable {
     private var _open = false
     private val _cVars = HashMap<String, CVar>()
 
-    //val cVars get() = _cVars.values
+    val cVars get() = _cVars.values
 
     fun initialize() {
         _thread.start()
@@ -173,16 +173,16 @@ class Console() : AutoCloseable {
             }
 
             val text = input.nextLine()
-            val tokens = text.split("[ \t]".toRegex(), 2).toTypedArray()
+            val tokens = text.split("[ \t]".toRegex()).toTypedArray()
             val command = tokens[0]
-            var args = ""
+            var args = arrayOf<String>()
 
             if (tokens.size > 1) {
-                args = tokens[1]
-                Log.trace("Console", "Read command: $command. Args: $args")
+                args = tokens.sliceArray(1 until tokens.size)
+                Log.trace("Console", "Read command: $command. Args: ${args.contentToString()}")
             }
 
-            if (!_commandQueue.offer(ConsoleCommand(command, args))) {
+            if (!_commandQueue.offer(ConsoleCommand(command, *args))) {
                 Log.warn("Console", "Command overflow!")
             }
         }
