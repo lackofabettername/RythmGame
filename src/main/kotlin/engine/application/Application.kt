@@ -14,10 +14,10 @@ class Application(
 ) {
 
     private val _inputEventQueue = ArrayBlockingQueue<InputEvent>(QueueCapacity, true)
-    private val window = Window("Freehand")
+    private val _window = Window("Freehand")
 
-    val CanvasW by window::width
-    val CanvasH by window::height
+    val CanvasW by _window::width
+    val CanvasH by _window::height
 
     var isRunning = false
         private set
@@ -37,19 +37,21 @@ class Application(
         val windH = _console.getCVar("app_Height")!!
         val resizable = _console.getCVar("app_Resizable")!!
 
-        window.initialize(
+        _window.initialize(
             vSync.clean().Flag,
             windW.clean().Value,
             windH.clean().Value,
             resizable.clean().Flag
         )
 
-        vSync.Listeners.add { vSync -> window.vSync = vSync.clean().Flag }
-        windW.Listeners.add { windW -> window.width = windW.clean().Value }
-        windH.Listeners.add { windH -> window.height = windH.clean().Value }
-        resizable.Listeners.add { vSync -> window.resizable = resizable.clean().Flag }
+        vSync.Listeners.add { vSync -> _window.vSync = vSync.clean().Flag }
+        windW.Listeners.add { windW -> _window.width = windW.clean().Value }
+        windH.Listeners.add { windH -> _window.height = windH.clean().Value }
+        resizable.Listeners.add { vSync -> _window.resizable = resizable.clean().Flag }
 
         setCallbacks()
+
+        Key.initialize()
 
         Log.indent--
         Log.info("Application", "Initialized window.")
@@ -63,7 +65,7 @@ class Application(
     }
 
     private fun setCallbacks() {
-        with(window) {
+        with(_window) {
             setKeyCallback { window, key, scancode, action, mods ->
                 enqueueEvent(
                     KeyEvent(
@@ -73,7 +75,7 @@ class Application(
                             GLFW_RELEASE -> KeyEventType.Released
                             else -> KeyEventType.Unknown
                         },
-                        Key(key, scancode, mods)
+                        Key(key, scancode, Modifiers(mods))
                     )
                 )
             }
@@ -123,15 +125,18 @@ class Application(
         }
     }
 
+    fun pollEvents() {
+        _window.pollEvents()
+    }
+
     fun update() {
-        window.pollEvents()
         _logic.onUpdate()
     }
 
     fun render() {
-        if (!window.ShouldClose) {
-            _logic.onRender()
-            window.swapBuffers()
+        if (!_window.ShouldClose) {
+            _logic.onRender(_window)
+            _window.swapBuffers()
         } else {
             close()
         }
@@ -140,7 +145,7 @@ class Application(
     fun close() {
         if (isRunning) {
             _logic.onClose()
-            window.cleanup()
+            _window.cleanup()
             isRunning = false
         }
     }

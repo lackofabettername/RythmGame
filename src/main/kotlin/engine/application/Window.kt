@@ -17,7 +17,7 @@ class Window(
     var resizable = true
         set(value) {
             field = value
-            GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, if (value) GL_TRUE else GL_FALSE)
+            glfwWindowHint(GLFW_RESIZABLE, if (value) GL_TRUE else GL_FALSE)
         }
 
     var width = 0
@@ -37,7 +37,7 @@ class Window(
     var vSync = false
         set(value) {
             field = value
-            GLFW.glfwSwapInterval(if (value) 1 else 0)
+            glfwSwapInterval(if (value) 60 else 0)
         }
 
     var isResized = false
@@ -71,17 +71,17 @@ class Window(
         }
 
         // Initialize GLFW. Most GLFW functions will not work before doing this.
-        check(GLFW.glfwInit()) { "Unable to initialize GLFW" }
+        check(glfwInit()) { "Unable to initialize GLFW" }
 
-        GLFW.glfwDefaultWindowHints() // optional, the current window hints are already the default
-        GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GL_FALSE) // the window will stay hidden after creation
-        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 3)
-        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 2)
-        GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_PROFILE, GLFW.GLFW_OPENGL_CORE_PROFILE)
-        GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE)
+        glfwDefaultWindowHints() // optional, the current window hints are already the default
+        glfwWindowHint(GLFW_VISIBLE, GL_FALSE) // the window will stay hidden after creation
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3)
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2)
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE)
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE)
 
         // Create the window
-        Handle = GLFW.glfwCreateWindow(100, 100, title, MemoryUtil.NULL, MemoryUtil.NULL)
+        Handle = glfwCreateWindow(100, 100, title, MemoryUtil.NULL, MemoryUtil.NULL)
         check(Handle != MemoryUtil.NULL) { "Failed to create the GLFW window" }
 
         this.width = width;
@@ -89,17 +89,17 @@ class Window(
         this.resizable = resizable //DO NOT MOVE!
 
         // Setup resize callback
-        GLFW.glfwSetFramebufferSizeCallback(Handle) { _, width: Int, height: Int ->
+        glfwSetFramebufferSizeCallback(Handle) { _, width: Int, height: Int ->
             this.width = width
             this.height = height
             isResized = true
         }
 
         // Get the resolution of the primary monitor
-        val vidmode = GLFW.glfwGetVideoMode(GLFW.glfwGetPrimaryMonitor())
+        val vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor())
         vidmode?.let {
             // Center our window
-            GLFW.glfwSetWindowPos(
+            glfwSetWindowPos(
                 Handle,
                 (vidmode.width() - width) / 2,
                 (vidmode.height() - height) / 2
@@ -107,13 +107,13 @@ class Window(
         }
 
         // Make the OpenGL context current
-        GLFW.glfwMakeContextCurrent(Handle)
+        glfwMakeContextCurrent(Handle)
 
         //DO NOT MOVE!
         this.vSync = vSync
 
         // Make the window visible
-        GLFW.glfwShowWindow(Handle)
+        glfwShowWindow(Handle)
         GL.createCapabilities()
 
         // Set the clear color
@@ -135,7 +135,7 @@ class Window(
     }
 
     val ShouldClose: Boolean
-        get() = GLFW.glfwWindowShouldClose(Handle)
+        get() = glfwWindowShouldClose(Handle)
 
     fun setKeyCallback(callback: GLFWKeyCallbackI) {
         glfwSetKeyCallback(Handle, callback)
@@ -158,14 +158,20 @@ class Window(
     }
 
     fun pollEvents() {
-        GLFW.glfwPollEvents()
+        glfwPollEvents()
     }
 
     fun swapBuffers() {
-        GLFW.glfwSwapBuffers(Handle)
+        glfwSwapBuffers(Handle)
     }
 
     fun cleanup() {
-        GLFW.glfwTerminate()
+        glfwTerminate()
+    }
+
+    companion object {
+        val ColorBuffer = GL_COLOR_BUFFER_BIT
+        val DepthBuffer = GL_DEPTH_BUFFER_BIT
+        val StencilBuffer = GL_STENCIL_BUFFER_BIT
     }
 }

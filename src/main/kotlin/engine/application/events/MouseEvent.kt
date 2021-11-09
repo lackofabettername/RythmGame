@@ -13,7 +13,7 @@ class MouseEvent private constructor(
     val Y get() = Float.fromBits(_valueB)
 
     val Button get() = _valueA
-    val Mods get() = _valueB
+    val Mods get() = Modifiers(_valueB)
 
     val InsideWindow get() = _valueA > 0
 

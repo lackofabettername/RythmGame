@@ -10,20 +10,12 @@ interface WindowCallbacks {
 
     fun onUpdate()
 
-    fun onRender()
+    fun onRender(window: Window)
 
     fun onClose()
 
     fun onInputEvent(event: InputEvent)
 
     companion object {
-        @Deprecated("")
-        val Dummy = object : WindowCallbacks {
-            override fun onStart(parentLoopback: Consumer<ApplicationEvent>) {}
-            override fun onUpdate() {}
-            override fun onRender() {}
-            override fun onClose() {}
-            override fun onInputEvent(event: InputEvent) {}
-        }
     }
 }

@@ -2,6 +2,7 @@ package engine.events
 
 import engine.console.ConsoleCommand
 import engine.sortMe.Engine
+import logging.Log
 import logging.Log.warn
 import java.util.concurrent.ArrayBlockingQueue
 
@@ -35,6 +36,7 @@ class SysEventManager(private val _engine: Engine) {
     }
 
     fun captureInputs() {
+        _engine.Window.pollEvents()
         _engine.Window.rerouteInputEvents { input -> enqueueEvent(SysEvent(SysEventType.Input, 0, input)) }
     }
 

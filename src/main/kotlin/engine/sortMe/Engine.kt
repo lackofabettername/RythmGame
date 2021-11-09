@@ -1,11 +1,9 @@
 package engine.sortMe
 
 import engine.application.Application
+import engine.application.Window
 import engine.application.WindowCallbacks
-import engine.application.events.ApplicationEvent
-import engine.application.events.InputEvent
-import engine.application.events.InputEventType
-import engine.application.events.KeyEvent
+import engine.application.events.*
 import engine.console.Console
 import engine.console.ConsoleCommand
 import engine.events.SysEvent
@@ -19,7 +17,6 @@ import logging.Log
 import logging.LogLevel
 import logging.style.Foreground
 import logging.style.Style
-import org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -200,6 +197,7 @@ class Engine(
         }
     }
 
+    private var _updateCount = 0
     private fun mainLoop() {
 
         _isRunning = true
@@ -218,11 +216,14 @@ class Engine(
         }
 
         while (_isRunning) {
+            Log.trace("Engine", "Update #$_updateCount")
+            ++_updateCount
 
             // ---------------------
             //  Core systems update
             // ---------------------
             _events.captureInputs() // Flush the input events once per frame...
+
             FileSystem.writeConfiguration(Console)
             if (maxFPS.Dirty || vSync.Dirty) {
                 if (!_isServerDedicated) {
@@ -247,6 +248,7 @@ class Engine(
                 //TODO: Add wait() to reduce busy wait? Check delta time so we don't over-wait?
             } while (deltaTime < deltaTimeMin)
             eventTimeLast = eventTime
+
             executeSystemCommands()
 
             //TODO: Mess with the delta time here...
@@ -292,7 +294,7 @@ class Engine(
 }
 
 fun main() {
-    Log.logLevel = LogLevel.Debug
+    Log.logLevel = LogLevel.Trace
 
     val serverGameLogic = object : ServerGameLogic {
 
@@ -315,7 +317,10 @@ fun main() {
 
     val renderGameLogic = object : WindowCallbacks {
         lateinit var parentLoopback: Consumer<ApplicationEvent>
+        var state = false
+        var v = 0f
 
+        var frameCount = 0
         override fun onStart(parentLoopback: Consumer<ApplicationEvent>) {
             this.parentLoopback = parentLoopback
         }
@@ -323,18 +328,39 @@ fun main() {
         override fun onUpdate() {
         }
 
-        override fun onRender() {
+        override fun onRender(window: Window) {
+            Log.trace("RenderLogic", "frame #$frameCount")
+            ++frameCount
+
+            if (state) {
+                window.setClearColor(v, 1f, 1f, 1f)
+            } else {
+                window.setClearColor(v, 0f, 0f, 1f)
+            }
+            v = (v + 1) % 2
+
+            Log.trace("RenderLogic", "Rendering state $state")
+            window.clear(Window.ColorBuffer)
         }
 
         override fun onClose() {
         }
 
         override fun onInputEvent(event: InputEvent) {
+            Log.trace("RenderLogic", "Handling event $event")
             if (event.EventType == InputEventType.Key) {
-                if ((event as KeyEvent).Key.Key == GLFW_KEY_ESCAPE) {
-                    parentLoopback.accept(
-                        ApplicationEvent(ConsoleCommand("exit", ""))
-                    )
+                if ((event as KeyEvent).Type == KeyEventType.Pressed) {
+                    when (event.Key) {
+                        Key.Escape -> {
+                            parentLoopback.accept(
+                                ApplicationEvent(ConsoleCommand("exit", ""))
+                            )
+                        }
+                        Key.Space -> {
+                            state = !state
+                            Log.trace("RenderLogic", "Updated state to $state")
+                        }
+                    }
                 }
             }
         }
