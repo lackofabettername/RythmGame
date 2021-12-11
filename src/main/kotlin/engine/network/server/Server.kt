@@ -1,58 +1,70 @@
 package engine.network.server
 
-import engine.network.NetAddress
-import engine.network.NetManager
-import engine.network.NetMessage
-import engine.network.NetPacket
-import engine.sortMe.ServerGameLogic
-import logging.Log.callerNameSimple
-import logging.Log.info
+import engine.network.common.NetMessageType.*
+import engine.network.common.NetAddress
+import engine.network.common.NetManager
+import engine.network.common.NetMessage
+import engine.network.common.NetPacket
+import logging.Log
 
 class Server(
     private val _network: NetManager,
-    private val _logic: ServerGameLogic?
+    private val _logic: ServerGameLogic
 ) {
 
     @Deprecated("can this be removed?")
-    var Dedicated = false
+    var dedicated = false
 
-    var UpdateCount = 0
-    var UpdateTimeStep = 10 //lack: 10ms? so 100 ups
+    val UpdateTimeStep = 100 //100ms so 10 ups
 
     private val _isRunning = false
-    private var _gameTime: Long = 0
+    internal var _gameTime: Long = 0
     private var _gameTimeResidual: Long = 0
 
-    private val _address = NetAddress.localServer()
-    private val _session = ServerSession()
+    private val _address = NetAddress.localServer
+    internal val _session = ServerSession()
+
+    fun initialize() {
+        Log.info("Server", "Initializing...")
+        _logic.initialize(ServerInformation(this))
+    }
 
     fun updateFrame(deltaTime: Long) {
+
         // Run the game in steps
         _gameTimeResidual += deltaTime
         while (_gameTimeResidual >= UpdateTimeStep) {
-            _gameTime += UpdateTimeStep.toLong()
-            _gameTimeResidual -= UpdateTimeStep.toLong()
+            _gameTime += UpdateTimeStep
+            _gameTimeResidual -= UpdateTimeStep
+
+            _logic.update(UpdateTimeStep)
+
             //TODO: Update the game here
-            ++UpdateCount
         }
     }
 
     fun shutdown() {
-        info("Server", "Shutting down...")
-        info("Server", "Shutdown complete.")
+        Log.info("Server", "Shutting down...")
+        Log.indent++
+
+        _logic.shutdown()
+
+        Log.indent--
+        Log.info("Server", "Shutdown complete.")
     }
 
     //region System event handlers
     fun onNetPacketReceived(packet: NetPacket) {
+        Log.trace("Server", "Handling packet $packet")
 
         // Find which client the message is from
-        val client = _session.getClient(packet.Address)
+        val client = _session.getClient(packet.SenderAddress)
         if (client != null) {
-            assert(client.Address == packet.Address)
+            assert(client.Address == packet.SenderAddress)
 
             // Make sure it's a valid, in-sequence packet
             if (client.Channel.process(packet)) {
-                ServerParse.clientMessage(client, packet.Message)
+                ServerParse.clientMessage(_logic, client, packet.Message)
             }
         } else { // Connectionless packet
             onNetPacketReceivedOOB(packet)
@@ -60,12 +72,17 @@ class Server(
     }
 
     private fun onNetPacketReceivedOOB(packet: NetPacket) {
-        val commandText = packet.Message.Data as String
+        val message = packet.Message
+        when (message.Type) {
+            CL_CommandString -> {
+                val commandText = packet.Message.Data as String
+            }
+            CL_UserCommand -> TODO()
+        }
     }
     //endregion
 
-    //endregion
-    private fun sendMessage(client: ServerClient, message: NetMessage) {
+    internal fun sendMessage(client: ServerClient, message: NetMessage) {
         val packet = client.Channel.send(message)
         _network.sendPacket(packet)
     }

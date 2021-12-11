@@ -1,4 +1,4 @@
-package engine.network
+package engine.network.common
 
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.function.Consumer
@@ -26,9 +26,9 @@ class NetManager {
     }
 
     fun sendPacket(packet: NetPacket): Boolean {
-        return _isOpen && packet.Address != null && when (packet.Address.AddressType) {
+        return _isOpen && when (packet.TargetAddress.AddressType) {
             NetAddressType.Internet -> _outgoingMessages.offer(packet)
-            NetAddressType.Loopback -> when (packet.Address.Addressable) {
+            NetAddressType.Loopback -> when (packet.TargetAddress.Addressable) {
                 NetAddressable.Unknown -> false
                 NetAddressable.Server -> _loopbackToServer.sendPacket(packet)
                 NetAddressable.Client -> _loopbackToClient.sendPacket(packet)

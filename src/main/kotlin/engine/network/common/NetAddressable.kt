@@ -1,4 +1,4 @@
-package engine.network
+package engine.network.common
 
 /**
  * Unknown, Server, Client

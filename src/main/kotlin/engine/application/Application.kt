@@ -58,7 +58,7 @@ class Application(
 
         Log.info("Application", "Initializing render logic...")
         Log.indent++
-        _logic.onStart(this::enqueueEvent)
+        _logic.onStart(_window, this::enqueueEvent)
         isRunning = true
         Log.indent--
         Log.info("Application", "Initialized render logic.")

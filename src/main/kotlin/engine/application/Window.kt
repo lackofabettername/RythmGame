@@ -32,12 +32,12 @@ class Window(
             field = value
             glfwSetWindowSize(Handle, width, height)
         }
-    val AspectRatio get() = width.toFloat() / height.toFloat()
+    val aspectRatio get() = width.toFloat() / height.toFloat()
 
     var vSync = false
         set(value) {
             field = value
-            glfwSwapInterval(if (value) 60 else 0)
+            glfwSwapInterval(if (value) 1 else 0)
         }
 
     var isResized = false

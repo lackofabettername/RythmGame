@@ -1,8 +1,6 @@
-package engine.network
+package engine.network.common
 
 import java.util.concurrent.ArrayBlockingQueue
-import engine.network.NetPacket
-import engine.network.NetLoopback
 
 class NetLoopback {
     private val _messages = ArrayBlockingQueue<NetPacket>(QueueCapacity, true)

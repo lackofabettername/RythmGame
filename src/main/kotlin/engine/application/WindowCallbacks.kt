@@ -6,7 +6,7 @@ import java.util.function.Consumer
 
 interface WindowCallbacks {
 
-    fun onStart(parentLoopback: Consumer<ApplicationEvent>)
+    fun onStart(window: Window, parentLoopback: Consumer<ApplicationEvent>)
 
     fun onUpdate()
 

@@ -1,7 +1,6 @@
 package engine.sortMe
 
 import engine.application.Application
-import engine.application.Window
 import engine.application.WindowCallbacks
 import engine.application.events.*
 import engine.console.Console
@@ -10,33 +9,50 @@ import engine.events.SysEvent
 import engine.events.SysEventManager
 import engine.events.SysEventType
 import engine.files.FileSystem
-import engine.network.NetAddressable
-import engine.network.NetManager
+import engine.network.common.NetAddressable
+import engine.network.common.NetManager
+import engine.network.common.NetPacket
 import engine.network.server.Server
+import engine.network.server.ServerGameLogic
 import logging.Log
-import logging.LogLevel
 import logging.style.Foreground
 import logging.style.Style
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 import java.util.concurrent.ArrayBlockingQueue
-import java.util.function.Consumer
 
 class Engine(
-    serverGameLogic: ServerGameLogic,
-    clientGameLogic: ClientGameLogic,
-    renderGameLogic: WindowCallbacks
+    serverGameLogic: ServerGameLogic? = null,
+    clientGameLogic: ClientGameLogic? = null,
+    renderGameLogic: WindowCallbacks? = null
 ) {
 
     //region Main engine modules
     val Console: Console = Console()
-    val Window: Application = Application(Console, renderGameLogic)
+    val Window: Application?
 
     val Network = NetManager()
     private val _events = SysEventManager(this)
-    private var _server: Server? = Server(Network, serverGameLogic)
-    private var _client: Client? = Client(Network, clientGameLogic)
+    private var _server: Server?
+    private var _client: Client?
+
+    init {
+        Window = if (renderGameLogic != null)
+            Application(Console, renderGameLogic)
+        else
+            null
+
+        _server = if (serverGameLogic != null)
+            Server(Network, serverGameLogic)
+        else
+            null
+
+        _client = if (clientGameLogic != null)
+            Client(Network, clientGameLogic)
+        else
+            null
+    }
     //endregion
 
     private val _commandQueue = ArrayBlockingQueue<ConsoleCommand>(512, true)
@@ -85,11 +101,17 @@ class Engine(
         Console.registerCVarIfAbsent("sys_VSync", false)
 
         Console.initialize()
-        Window.initialize()
-        Network.initialize()
+        Window?.initialize()
         _events.initialize()
-        //_server.initialize()
+
+        Log.info("Engine", "Initializing Network...")
+        Log.indent++
+        Network.initialize()
+        _server?.initialize()
         _client?.initialize()
+        Log.indent--
+        Log.info("Engine", "Initialized Network")
+
         _isRunning = true
 
         Log.indent--
@@ -100,10 +122,10 @@ class Engine(
         Log.info("Engine", "Shutting down...")
         Log.indent++
         _client?.shutdown()
-        //_server.shutdown()
+        _server?.shutdown()
         _events.close()
         Network.close()
-        Window.close()
+        Window?.close()
         Console.close()
         FileSystem.close()
         _isRunning = false
@@ -129,7 +151,9 @@ class Engine(
             when (event.Type) {
                 SysEventType.Empty -> {
                     // Process the loopback channels for local play
-                    //Network.consumeLoopbackPackets(_server::onNetPacketReceived, NetAddressable.Server)
+                    _server?.let {
+                        Network.consumeLoopbackPackets(it::onNetPacketReceived, NetAddressable.Server)
+                    }
                     _client?.let {
                         Network.consumeLoopbackPackets(it::onNetPacketReceived, NetAddressable.Client)
                     }
@@ -151,17 +175,22 @@ class Engine(
                             )
                         ) //Does this cause a frame of latency?
                     else
-                        Window.onInputEvent(event)
+                        Window?.onInputEvent(event)
 
                     // _client.onInputEvent(event.Reference as InputEvent?)
                 }
 
                 SysEventType.Packet -> {
-                    //    NetPacket message =(NetPacket) event . Reference
-                    //            when (message.Address.Addressable) {
-                    //                Server -> _server.onNetPacketReceived(message)
-                    //                Client -> _client.onNetPacketReceived(message)
-                    //            }
+                    val packet = event.Reference as NetPacket
+                    when (packet.TargetAddress.Addressable) {
+                        NetAddressable.Server -> _server?.onNetPacketReceived(packet)
+                        NetAddressable.Client -> _client?.onNetPacketReceived(packet)
+                        NetAddressable.Unknown -> {
+                            Log.warn("Engine", "NetPacket with unknown target. Sending to Server")
+                            Log.trace("Engine", "$packet")
+                            _server?.onNetPacketReceived(packet)
+                        }
+                    }
                 }
             }
 
@@ -216,13 +245,14 @@ class Engine(
         }
 
         while (_isRunning) {
-            Log.trace("Engine", "Update #$_updateCount")
+            //Log.trace("Engine", "Update #$_updateCount")
             ++_updateCount
 
             // ---------------------
             //  Core systems update
             // ---------------------
-            _events.captureInputs() // Flush the input events once per frame...
+            if (Window != null)
+                _events.captureInputs() // Flush the input events once per frame...
 
             FileSystem.writeConfiguration(Console)
             if (maxFPS.Dirty || vSync.Dirty) {
@@ -256,7 +286,7 @@ class Engine(
             // --------------------
             //  Server-side update
             // --------------------
-            //_server.updateFrame(deltaTime)
+            _server?.updateFrame(deltaTime)
 
             // Startup or shutdown the client system?
             //if (_isServerDedicated != _server.Dedicated) {
@@ -272,10 +302,10 @@ class Engine(
             // --------------------
             // Client-side update
             // --------------------
-            if (!_isServerDedicated) {
+            if (!_isServerDedicated && Window != null) {
                 processEventLoop() // Run again to avoid a frame of latency...
                 executeSystemCommands()
-                //_client.updateFrame(deltaTime)
+                _client?.updateFrame(deltaTime)
 
                 //TODO: Options for rendering the client-side simulation...
                 // - Command the window to render and allow it to notify the client via interface or raw method call.
@@ -291,82 +321,4 @@ class Engine(
             }
         }
     }
-}
-
-fun main() {
-    Log.logLevel = LogLevel.Trace
-
-    val serverGameLogic = object : ServerGameLogic {
-
-    }
-
-    val clientGameLogic = object : ClientGameLogic {
-        override fun initialize() {
-
-        }
-
-        override fun updateFrame(deltaTime: Long) {
-
-        }
-
-        override fun close() {
-
-        }
-
-    }
-
-    val renderGameLogic = object : WindowCallbacks {
-        lateinit var parentLoopback: Consumer<ApplicationEvent>
-        var state = false
-        var v = 0f
-
-        var frameCount = 0
-        override fun onStart(parentLoopback: Consumer<ApplicationEvent>) {
-            this.parentLoopback = parentLoopback
-        }
-
-        override fun onUpdate() {
-        }
-
-        override fun onRender(window: Window) {
-            Log.trace("RenderLogic", "frame #$frameCount")
-            ++frameCount
-
-            if (state) {
-                window.setClearColor(v, 1f, 1f, 1f)
-            } else {
-                window.setClearColor(v, 0f, 0f, 1f)
-            }
-            v = (v + 1) % 2
-
-            Log.trace("RenderLogic", "Rendering state $state")
-            window.clear(Window.ColorBuffer)
-        }
-
-        override fun onClose() {
-        }
-
-        override fun onInputEvent(event: InputEvent) {
-            Log.trace("RenderLogic", "Handling event $event")
-            if (event.EventType == InputEventType.Key) {
-                if ((event as KeyEvent).Type == KeyEventType.Pressed) {
-                    when (event.Key) {
-                        Key.Escape -> {
-                            parentLoopback.accept(
-                                ApplicationEvent(ConsoleCommand("exit", ""))
-                            )
-                        }
-                        Key.Space -> {
-                            state = !state
-                            Log.trace("RenderLogic", "Updated state to $state")
-                        }
-                    }
-                }
-            }
-        }
-
-    }
-
-    val engine = Engine(serverGameLogic, clientGameLogic, renderGameLogic)
-    engine.run()
 }

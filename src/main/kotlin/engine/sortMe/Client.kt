@@ -1,8 +1,10 @@
 package engine.sortMe
 
 import engine.application.events.InputEvent
-import engine.network.NetManager
-import engine.network.NetPacket
+import engine.network.common.NetAddress
+import engine.network.common.NetManager
+import engine.network.common.NetMessage
+import engine.network.common.NetPacket
 import logging.Log
 
 class Client(
@@ -11,7 +13,8 @@ class Client(
 ) {
 
     fun initialize() {
-        _logic.initialize()
+        Log.info("Client", "Initializing...")
+        _logic.initialize(this::sendMessage)
     }
 
     fun updateFrame(deltaTime: Long) {
@@ -24,6 +27,18 @@ class Client(
         _logic.close()
         Log.indent--
         Log.info("Client", "Shutdown complete.")
+    }
+
+    private fun sendMessage(address: NetAddress, message: NetMessage) {
+        _network.sendPacket(
+            NetPacket(
+                address,
+                NetAddress.loopbackClient,
+                message,
+                0,
+                false
+            )
+        )
     }
 
     //region System event handlers

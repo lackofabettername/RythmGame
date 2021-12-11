@@ -1,9 +1,10 @@
-package engine.network
+package engine.network.common
 
 import java.io.Serializable
 
-class NetPacket @JvmOverloads constructor(//TODO: Identity for both sender and receiver, switch on receive...
-    val Address: NetAddress,
+data class NetPacket @JvmOverloads constructor(//TODO: Identity for both sender and receiver, switch on receive...
+    val TargetAddress: NetAddress,
+    val SenderAddress: NetAddress,
     val Message: NetMessage,
     val SequenceNumber: Int = -1,
     val IsReliable: Boolean = false

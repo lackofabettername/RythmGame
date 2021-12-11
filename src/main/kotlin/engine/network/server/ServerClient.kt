@@ -1,11 +1,12 @@
 package engine.network.server
 
-import engine.network.NetAddress
-import engine.network.NetChannel
+import engine.network.common.NetAddress
+import engine.network.common.NetChannel
 
 class ServerClient(
-    address: NetAddress
+    targetAddress: NetAddress,
+    senderAddress: NetAddress,
     ) {
-    val Channel = NetChannel(address)
-    val Address by Channel::Address
+    val Channel = NetChannel(targetAddress, senderAddress)
+    val Address by Channel::TargetAddress
 }

@@ -112,12 +112,15 @@ object FileSystem {
         // --- Defined by a game-specific manifest
         // --- or from some kind of core systems registry.
 
+        Log.info("FileSystem", "Loading Configuration...")
+        Log.indent++
+
         openFile("System.CFG", FileAccessMode.Reader)
             ?.use { inp ->
                 var line = inp.readString()
 
                 while (line != null) {
-                    Log.debug("FileSystem", line)
+                    Log.trace("FileSystem", line)
 
                     if (line.startsWith("CVar")) {
                         val parts = line.split(", ")
@@ -136,6 +139,9 @@ object FileSystem {
                     line = inp.readString()
                 }
             }
+
+        Log.indent--
+        Log.info("FileSystem", "Configuration Loaded")
     }
 
     fun writeConfiguration(console: Console) {

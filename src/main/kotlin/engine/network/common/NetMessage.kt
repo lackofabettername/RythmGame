@@ -1,4 +1,4 @@
-package engine.network
+package engine.network.common
 
 import java.io.Serializable
 

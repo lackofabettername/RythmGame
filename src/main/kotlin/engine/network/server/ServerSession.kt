@@ -1,8 +1,7 @@
 package engine.network.server
 
 import java.util.HashMap
-import engine.network.NetAddress
-import engine.network.server.ServerClient
+import engine.network.common.NetAddress
 
 /** Persistent server data between sessions  */
 class ServerSession {
