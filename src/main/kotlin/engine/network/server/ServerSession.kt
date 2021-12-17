@@ -13,4 +13,8 @@ class ServerSession {
     fun getClient(address: NetAddress): ServerClient? {
         return _connected[address]
     }
+
+    fun addClient(address: NetAddress, client: ServerClient) {
+        _connected[address] = client
+    }
 }

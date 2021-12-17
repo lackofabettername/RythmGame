@@ -1,12 +1,14 @@
 package engine.sortMe
 
-import engine.network.common.MessageConsumer
+import engine.network.common.NetMessage
 
 interface ClientGameLogic {
 
-    fun initialize(messageConsumer : MessageConsumer)
+    fun initialize(clientInfo: ClientInfo)
 
     fun updateFrame(deltaTime: Long)
 
     fun close()
+
+    fun MessageReceive(message: NetMessage)
 }

@@ -7,7 +7,6 @@ import engine.console.CVarValueType
 import engine.console.Console
 import logging.Log
 import java.io.File
-import java.io.FileNotFoundException
 import java.io.IOException
 
 object FileSystem {
@@ -113,7 +112,7 @@ object FileSystem {
         // --- or from some kind of core systems registry.
 
         Log.info("FileSystem", "Loading Configuration...")
-        Log.indent++
+        Log.Indent++
 
         openFile("System.CFG", FileAccessMode.Reader)
             ?.use { inp ->
@@ -140,7 +139,7 @@ object FileSystem {
                 }
             }
 
-        Log.indent--
+        Log.Indent--
         Log.info("FileSystem", "Configuration Loaded")
     }
 

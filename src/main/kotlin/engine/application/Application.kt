@@ -10,7 +10,7 @@ import java.util.function.Consumer
 //TODO: Variable Canvas size
 class Application(
     private val _console: Console,
-    private val _logic: WindowCallbacks
+    private val _logic: RenderLogic
 ) {
 
     private val _inputEventQueue = ArrayBlockingQueue<InputEvent>(QueueCapacity, true)
@@ -26,7 +26,7 @@ class Application(
     @Suppress("NAME_SHADOWING")
     fun initialize() {
         Log.info("Application", "Initializing window...")
-        Log.indent++
+        Log.Indent++
 
         _console.registerCVarIfAbsent("app_Width", 900)
         _console.registerCVarIfAbsent("app_Height", 600)
@@ -53,14 +53,14 @@ class Application(
 
         Key.initialize()
 
-        Log.indent--
+        Log.Indent--
         Log.info("Application", "Initialized window.")
 
         Log.info("Application", "Initializing render logic...")
-        Log.indent++
-        _logic.onStart(_window, this::enqueueEvent)
+        Log.Indent++
+        _logic.onStart(RenderInfo(_window, this))
         isRunning = true
-        Log.indent--
+        Log.Indent--
         Log.info("Application", "Initialized render logic.")
     }
 
@@ -135,7 +135,7 @@ class Application(
 
     fun render() {
         if (!_window.ShouldClose) {
-            _logic.onRender(_window)
+            _logic.onRender()
             _window.swapBuffers()
         } else {
             close()
@@ -153,7 +153,7 @@ class Application(
     //endregion
 
     //region Event handlers
-    private fun enqueueEvent(event: InputEvent) {
+    fun enqueueEvent(event: InputEvent) {
         if (_inputEventQueue.remainingCapacity() == 0) {
             Log.warn("Application", "Input queue overflow, discarding oldest event!")
             _inputEventQueue.remove()

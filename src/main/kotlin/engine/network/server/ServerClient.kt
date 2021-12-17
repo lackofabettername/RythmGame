@@ -9,4 +9,8 @@ class ServerClient(
     ) {
     val Channel = NetChannel(targetAddress, senderAddress)
     val Address by Channel::TargetAddress
+
+    override fun toString(): String {
+        return "ServerClient(Channel=$Channel, Address=$Address)"
+    }
 }

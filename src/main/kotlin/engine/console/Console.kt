@@ -25,7 +25,7 @@ class Console() : AutoCloseable {
 
     val cVars get() = _cVars.values
 
-    fun initialize() {
+    init {
         _thread.start()
     }
 

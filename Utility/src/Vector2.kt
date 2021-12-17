@@ -1,5 +1,6 @@
 package util
 
+import java.io.Serializable
 import kotlin.math.*
 import kotlin.random.Random
 
@@ -7,7 +8,7 @@ import kotlin.random.Random
 class Vector2(
     var x: Float = 0f,
     var y: Float = 0f
-) {
+) : Serializable {
 
     //region Constructors
     constructor(v: Vector2) : this(v.x, v.y)
@@ -325,7 +326,7 @@ class Vector2(
         return Vector2(this.x, this.y)
     }
 
-    override operator fun equals(other: Any?): Boolean {
+    override fun equals(other: Any?): Boolean {
         if (other !is Vector2) return false
         return x == other.x && y == other.y
     }

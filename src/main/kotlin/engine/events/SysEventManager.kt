@@ -74,8 +74,7 @@ class SysEventManager(private val _engine: Engine) {
 
     private fun readoutEvent() = _journal.read()
 
-
     companion object {
-        val QueueCapacity = 1024
+        const val QueueCapacity = 1024
     }
 }

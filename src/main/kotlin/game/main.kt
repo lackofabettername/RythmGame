@@ -9,26 +9,10 @@ import logging.Log
 import logging.LogLevel
 
 fun main() {
-    Log.logLevel = LogLevel.Trace
+    Log.LogLevel = LogLevel.Trace
+    Log.IncludeTrace = false
 
-    val serverGameLogic = object : ServerGameLogic {
-        lateinit var server: ServerInformation
-
-        override fun initialize(server: ServerInformation) {
-            this.server = server
-        }
-
-        override fun update(updateTimeStep: Int) {
-        }
-
-        override fun shutdown() {
-        }
-
-        override fun clientMessageReceive(client: ServerClient, message: NetMessage) {
-            Log.trace("ServerLogic", "Received $message from $client")
-        }
-    }
-
+    val serverGameLogic = DummyServerLogic()
     val clientGameLogic = DummyClientLogic()
     val renderGameLogic = DummyRenderLogic(clientGameLogic)
 

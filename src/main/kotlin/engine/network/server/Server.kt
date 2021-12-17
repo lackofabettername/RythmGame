@@ -24,7 +24,7 @@ class Server(
     private val _address = NetAddress.localServer
     internal val _session = ServerSession()
 
-    fun initialize() {
+    init {
         Log.info("Server", "Initializing...")
         _logic.initialize(ServerInformation(this))
     }
@@ -45,17 +45,20 @@ class Server(
 
     fun shutdown() {
         Log.info("Server", "Shutting down...")
-        Log.indent++
+        Log.Indent++
 
         _logic.shutdown()
 
-        Log.indent--
+        Log.Indent--
         Log.info("Server", "Shutdown complete.")
     }
 
     //region System event handlers
     fun onNetPacketReceived(packet: NetPacket) {
         Log.trace("Server", "Handling packet $packet")
+
+        if (_session.getClient(packet.SenderAddress) == null)
+            _session.addClient(packet.SenderAddress, ServerClient(packet.SenderAddress, this._address))
 
         // Find which client the message is from
         val client = _session.getClient(packet.SenderAddress)

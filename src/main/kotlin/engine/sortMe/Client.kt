@@ -1,5 +1,6 @@
 package engine.sortMe
 
+import engine.application.RenderLogic
 import engine.application.events.InputEvent
 import engine.network.common.NetAddress
 import engine.network.common.NetManager
@@ -9,12 +10,13 @@ import logging.Log
 
 class Client(
     private val _network: NetManager,
-    private val _logic: ClientGameLogic
+    private val _logic: ClientGameLogic,
+    renderLogic: RenderLogic
 ) {
 
-    fun initialize() {
+    init {
         Log.info("Client", "Initializing...")
-        _logic.initialize(this::sendMessage)
+        _logic.initialize(ClientInfo(this, renderLogic))
     }
 
     fun updateFrame(deltaTime: Long) {
@@ -23,13 +25,13 @@ class Client(
 
     fun shutdown() {
         Log.info("Client", "Shutting down...")
-        Log.indent++
+        Log.Indent++
         _logic.close()
-        Log.indent--
+        Log.Indent--
         Log.info("Client", "Shutdown complete.")
     }
 
-    private fun sendMessage(address: NetAddress, message: NetMessage) {
+    fun sendMessage(address: NetAddress, message: NetMessage) {
         _network.sendPacket(
             NetPacket(
                 address,
@@ -48,6 +50,11 @@ class Client(
     }
 
     fun onNetPacketReceived(packet: NetPacket) {
+        Log.trace("Client", "Received $packet")
+
+        if (true) {
+            _logic.MessageReceive(packet.Message)
+        }
 
         //TODO:
         // Update last packet time.

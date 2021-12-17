@@ -1,8 +1,6 @@
 package engine.network.server
 
-import engine.network.common.MessageConsumer
 import engine.network.common.NetMessage
-import engine.network.server.ServerClient
 
 interface ServerGameLogic {
 

@@ -11,15 +11,7 @@ class NetManager {
     private var _loopbackToClient = NetLoopback()
 
     @Volatile
-    private var _isOpen = false
-
-    fun initialize() {
-        _incomingMessages.clear()
-        _outgoingMessages.clear()
-        _loopbackToServer.clear()
-        _loopbackToClient.clear()
-        _isOpen = true
-    }
+    private var _isOpen = true
 
     fun close() {
         _isOpen = false

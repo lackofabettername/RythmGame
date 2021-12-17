@@ -5,6 +5,7 @@ import engine.network.common.NetMessage
 import engine.network.common.NetMessageType
 import imgui.ImGui
 import imgui.type.ImString
+import logging.Log
 
 class debugGUI(
     val parent: DummyRenderLogic
@@ -16,12 +17,13 @@ class debugGUI(
 
         ImGui.text("Send")
         ImGui.inputTextMultiline("Message", txfMessage)
-        if(ImGui.button("Send")) {
-            parent.client.messageConsumer.accept(
+        if (ImGui.button("Send")) {
+            Log.debug("Window", "Sending message ${txfMessage.get()}")
+            parent.client.clientInfo.send(
                 NetAddress.loopbackServer, NetMessage(
-                NetMessageType.CL_CommandString,
-                txfMessage.get()
-            )
+                    NetMessageType.CL_CommandString,
+                    txfMessage.get()
+                )
             )
         }
 

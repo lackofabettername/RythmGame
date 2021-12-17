@@ -7,7 +7,7 @@ import java.io.ObjectOutput
 import java.util.function.Consumer
 
 class CVar(
-    var Name: String,
+    val Name: String,
     val Type: CVarValueType
 ) {
     val Listeners = mutableListOf<Consumer<CVar>>()

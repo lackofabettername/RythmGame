@@ -1,7 +1,7 @@
 package engine.sortMe
 
 import engine.application.Application
-import engine.application.WindowCallbacks
+import engine.application.RenderLogic
 import engine.application.events.*
 import engine.console.Console
 import engine.console.ConsoleCommand
@@ -17,6 +17,9 @@ import engine.network.server.ServerGameLogic
 import logging.Log
 import logging.style.Foreground
 import logging.style.Style
+import util.misc.Checksum
+import util.misc.toHexString
+import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -25,34 +28,18 @@ import java.util.concurrent.ArrayBlockingQueue
 class Engine(
     serverGameLogic: ServerGameLogic? = null,
     clientGameLogic: ClientGameLogic? = null,
-    renderGameLogic: WindowCallbacks? = null
+    renderGameLogic: RenderLogic? = null
 ) {
 
     //region Main engine modules
-    val Console: Console = Console()
+    val Console: Console
     val Window: Application?
 
-    val Network = NetManager()
-    private val _events = SysEventManager(this)
+    private val _network: NetManager
     private var _server: Server?
     private var _client: Client?
 
-    init {
-        Window = if (renderGameLogic != null)
-            Application(Console, renderGameLogic)
-        else
-            null
-
-        _server = if (serverGameLogic != null)
-            Server(Network, serverGameLogic)
-        else
-            null
-
-        _client = if (clientGameLogic != null)
-            Client(Network, clientGameLogic)
-        else
-            null
-    }
+    private val _events = SysEventManager(this)
     //endregion
 
     private val _commandQueue = ArrayBlockingQueue<ConsoleCommand>(512, true)
@@ -60,15 +47,60 @@ class Engine(
     private var _isServerDedicated = false
     private var _isRunning = false
 
+    init {
+        run {
+            Locale.setDefault(Locale.ENGLISH) // Stupid Swedish computer uses , instead of . for floats
+
+            val time = DateTimeFormatter.ofPattern("yyyy/mm/dd HH:mm:ss").format(LocalDateTime.now())
+
+            Log.info("Engine", "$time, ${Checksum.digest(File("src/main/kotlin")).toHexString()}")
+        }
+
+        Log.info("Engine", "Initializing subsystems...")
+        Log.Indent++
+
+        Console = Console()
+
+        FileSystem.loadConfiguration(Console)
+        Console.registerCVarIfAbsent("sys_MaxRenderFPS", 0) // Uncapped
+        Console.registerCVarIfAbsent("sys_VSync", false)
+
+        Window = when {
+            renderGameLogic != null -> Application(Console, renderGameLogic)
+            else -> null
+        }
+        Window?.initialize()
+
+        _events.initialize()
+
+        Log.info("Engine", "Initializing Network...")
+        Log.Indent++
+        _network = NetManager()
+        _server = when {
+            serverGameLogic != null -> Server(_network, serverGameLogic)
+            else -> null
+        }
+        _client = when {
+            clientGameLogic != null -> Client(_network, clientGameLogic, renderGameLogic!!)
+            else -> null
+        }
+        Log.Indent--
+        Log.info("Engine", "Initialized Network")
+
+        _isRunning = true
+
+        Log.Indent--
+        Log.info("Engine", "Initialization complete.")
+    }
+
     fun run() {
         try {
-            initialize()
             mainLoop()
         } catch (e: Throwable) {
             try {
                 Log.error("Engine", "A catastrophic error occurred.", e)
             } catch (ignored: Throwable) {
-                println("(printing again as the Logger may not be functional)\nA catastrophic error occurred.")
+                System.err.println("A catastrophic error occurred.\n(printing again as the Logger may not be functional)")
                 e.printStackTrace()
             }
         } finally {
@@ -77,59 +109,18 @@ class Engine(
         }
     }
 
-    private fun initialize() {
-        run {
-            Locale.setDefault(Locale.ENGLISH) // Stupid Swedish computer uses , instead of . for floats
-
-            val time = DateTimeFormatter.ofPattern("yyyy/mm/dd HH:mm:ss").format(LocalDateTime.now())
-
-            //val md = MessageDigest.getInstance("SHA-1")
-            //val root = File("src/main/")
-            //getChecksum(root, md)
-            //val digest: ByteArray = md.digest()
-            //val checksum = digest.toHex()
-
-            //Log.info("Game Engine", "$time | $checksum")
-            Log.info("Engine", "$time")
-        }
-
-        Log.info("Engine", "Initializing subsystems...")
-        Log.indent++
-
-        FileSystem.loadConfiguration(Console)
-        Console.registerCVarIfAbsent("sys_MaxRenderFPS", 0) // Uncapped
-        Console.registerCVarIfAbsent("sys_VSync", false)
-
-        Console.initialize()
-        Window?.initialize()
-        _events.initialize()
-
-        Log.info("Engine", "Initializing Network...")
-        Log.indent++
-        Network.initialize()
-        _server?.initialize()
-        _client?.initialize()
-        Log.indent--
-        Log.info("Engine", "Initialized Network")
-
-        _isRunning = true
-
-        Log.indent--
-        Log.info("Engine", "Initialization complete.")
-    }
-
     private fun shutdown() {
         Log.info("Engine", "Shutting down...")
-        Log.indent++
+        Log.Indent++
         _client?.shutdown()
         _server?.shutdown()
         _events.close()
-        Network.close()
+        _network.close()
         Window?.close()
         Console.close()
         FileSystem.close()
         _isRunning = false
-        Log.indent--
+        Log.Indent--
         Log.info("Engine", "Shutdown complete.")
 
         Log.info("Log", "Closing log file...")
@@ -152,10 +143,10 @@ class Engine(
                 SysEventType.Empty -> {
                     // Process the loopback channels for local play
                     _server?.let {
-                        Network.consumeLoopbackPackets(it::onNetPacketReceived, NetAddressable.Server)
+                        _network.consumeLoopbackPackets(it::onNetPacketReceived, NetAddressable.Server)
                     }
                     _client?.let {
-                        Network.consumeLoopbackPackets(it::onNetPacketReceived, NetAddressable.Client)
+                        _network.consumeLoopbackPackets(it::onNetPacketReceived, NetAddressable.Client)
                     }
                 }
 
@@ -226,11 +217,9 @@ class Engine(
         }
     }
 
-    private var _updateCount = 0
     private fun mainLoop() {
 
-        _isRunning = true
-
+        //region Loop Timing
         var deltaTime: Long
         var deltaTimeMin: Long
         var eventTime: Long
@@ -243,10 +232,9 @@ class Engine(
         } else {
             0L
         }
+        //endregion
 
         while (_isRunning) {
-            //Log.trace("Engine", "Update #$_updateCount")
-            ++_updateCount
 
             // ---------------------
             //  Core systems update
@@ -254,7 +242,9 @@ class Engine(
             if (Window != null)
                 _events.captureInputs() // Flush the input events once per frame...
 
-            FileSystem.writeConfiguration(Console)
+            FileSystem.writeConfiguration(Console) //TODO: only write when CVars are updated?
+
+            //Update loop timing if needed.
             if (maxFPS.Dirty || vSync.Dirty) {
                 if (!_isServerDedicated) {
                     deltaTimeMin = if (maxFPS.Value > 0 && !vSync.Flag) {
@@ -270,11 +260,14 @@ class Engine(
             // Spin here if things are going too fast...
             do {
                 eventTime = processEventLoop()
+
                 if (eventTimeLast > eventTime) {    // Possible on first frame of journal playback...
                     eventTimeLast = eventTime // Protect against negative delta times.
                 }
+
                 deltaTime = eventTime - eventTimeLast
                 Thread.onSpinWait() //Reduce system strain.
+
                 //TODO: Add wait() to reduce busy wait? Check delta time so we don't over-wait?
             } while (deltaTime < deltaTimeMin)
             eventTimeLast = eventTime
@@ -300,11 +293,12 @@ class Engine(
             //}
 
             // --------------------
-            // Client-side update
+            //  Client-side update
             // --------------------
             if (!_isServerDedicated && Window != null) {
                 processEventLoop() // Run again to avoid a frame of latency...
                 executeSystemCommands()
+
                 _client?.updateFrame(deltaTime)
 
                 //TODO: Options for rendering the client-side simulation...

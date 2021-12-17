@@ -1,27 +1,30 @@
 package game
 
+import engine.application.RenderInfo
 import engine.application.Window
-import engine.application.WindowCallbacks
+import engine.application.RenderLogic
 import engine.application.events.*
 import engine.console.ConsoleCommand
 import logging.Log
-import java.util.function.Consumer
+import util.Vector2
 
 class DummyRenderLogic(
     val client: DummyClientLogic
-) : WindowCallbacks {
-    lateinit var parentLoopback: Consumer<ApplicationEvent>
+) : RenderLogic {
+    lateinit var renderInfo: RenderInfo
 
     val gui = GUI()
+
+    val playerPos = Vector2()
 
     var state = false
     var v = 0f
 
     var frameCount = 0
 
-    override fun onStart(window: Window, parentLoopback: Consumer<ApplicationEvent>) {
-        this.parentLoopback = parentLoopback
-        gui.initialize(window)
+    override fun onStart(renderInfo: RenderInfo) {
+        this.renderInfo = renderInfo
+        gui.initialize(renderInfo.Window)
 
         gui.addWindow(debugGUI(this))
     }
@@ -29,19 +32,12 @@ class DummyRenderLogic(
     override fun onUpdate() {
     }
 
-    override fun onRender(window: Window) {
+    override fun onRender() {
         //Log.trace("RenderLogic", "frame #$frameCount")
         ++frameCount
 
-        if (state) {
-            window.setClearColor(v, 1f, 1f, 1f)
-        } else {
-            window.setClearColor(v, 0f, 0f, 1f)
-        }
-        //v = (v + 1) % 2
-
-        //Log.trace("RenderLogic", "Rendering state $state")
-        window.clear(Window.ColorBuffer)
+        renderInfo.Window.setClearColor(1f, playerPos.y, 0f, 0f)
+        renderInfo.Window.clear(Window.ColorBuffer)
 
         gui.render()
     }
@@ -55,7 +51,7 @@ class DummyRenderLogic(
             if ((event as KeyEvent).Type == KeyEventType.Pressed) {
                 when (event.Key) {
                     Key.Escape -> {
-                        parentLoopback.accept(
+                        renderInfo.enqueueEvent(
                             ApplicationEvent(ConsoleCommand("exit", ""))
                         )
                     }
