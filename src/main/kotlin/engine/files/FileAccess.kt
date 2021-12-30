@@ -14,12 +14,12 @@ class FileAccess(
     init {
         when (Type) {
             FileType.Objects -> {
-                _writer = if (Mode === FileAccessMode.Writer) ObjectWriter(file) else null
-                _reader = if (Mode === FileAccessMode.Reader) ObjectReader(file) else null
+                _writer = if (Mode === FileAccessMode.Write) ObjectWriter(file) else null
+                _reader = if (Mode === FileAccessMode.Read) ObjectReader(file) else null
             }
             FileType.Strings -> {
-                _writer = if (Mode === FileAccessMode.Writer) StringWriter(file) else null
-                _reader = if (Mode === FileAccessMode.Reader) StringReader(file) else null
+                _writer = if (Mode === FileAccessMode.Write) StringWriter(file) else null
+                _reader = if (Mode === FileAccessMode.Read) StringReader(file) else null
             }
             else -> {
                 _writer = null
@@ -38,7 +38,7 @@ class FileAccess(
     }
 
     fun readObject(): Any? {
-        if (Mode !== FileAccessMode.Reader) return null
+        if (Mode !== FileAccessMode.Read) return null
         if (Type !== FileType.Objects) return null
         try {
             return (_reader as ObjectReader).read()
@@ -51,7 +51,7 @@ class FileAccess(
     }
 
     fun writeObject(`object`: Any?) {
-        if (Mode != FileAccessMode.Writer) return
+        if (Mode != FileAccessMode.Write) return
         if (Type != FileType.Objects) return
         try {
             (_writer as ObjectWriter).write(`object`)
@@ -61,7 +61,7 @@ class FileAccess(
     }
 
     fun readString(): String? {
-        if (Mode !== FileAccessMode.Reader) return null
+        if (Mode !== FileAccessMode.Read) return null
         if (Type !== FileType.Strings) return null
         try {
             return (_reader as StringReader).read()
@@ -72,7 +72,7 @@ class FileAccess(
     }
 
     fun writeString(string: String?) {
-        if (Mode != FileAccessMode.Writer) return
+        if (Mode != FileAccessMode.Write) return
         if (Type != FileType.Strings) return
         try {
             (_writer as StringWriter).write(string)

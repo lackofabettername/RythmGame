@@ -67,7 +67,7 @@ object FileSystem {
     @JvmStatic
     fun readObject(fileName: String): Any? {
         val reader = getFileAccessor(fileName)
-        return if (reader != null && reader.Mode == FileAccessMode.Reader) {
+        return if (reader != null && reader.Mode == FileAccessMode.Read) {
             reader.readObject()
         } else {
             Log.warn("FileSystem", "Attempting to write to an unopened or read-only file!")
@@ -78,7 +78,7 @@ object FileSystem {
     @JvmStatic
     fun writeObject(fileName: String, `object`: Any?) {
         val writer = getFileAccessor(fileName)
-        if (writer != null && writer.Mode === FileAccessMode.Writer) {
+        if (writer != null && writer.Mode === FileAccessMode.Write) {
             writer.writeObject(`object`)
         } else {
             Log.warn("FileSystem", "Attempting to write to an unopened or read-only file!")
@@ -87,7 +87,7 @@ object FileSystem {
 
     fun readString(fileName: String): String? {
         val reader = getFileAccessor(fileName)
-        if (reader != null && reader.Mode === FileAccessMode.Reader) {
+        if (reader != null && reader.Mode === FileAccessMode.Read) {
             return reader.readString()
         } else {
             Log.warn("FileSystem", "Attempting to write to an unopened or read-only file!")
@@ -97,7 +97,7 @@ object FileSystem {
 
     fun writeString(fileName: String, string: String?) {
         val writer = getFileAccessor(fileName)
-        if (writer != null && writer.Mode === FileAccessMode.Writer) {
+        if (writer != null && writer.Mode === FileAccessMode.Write) {
             writer.writeString(string)
         } else {
             Log.warn("FileSystem", "Attempting to write to an unopened or read-only file!")
@@ -114,7 +114,7 @@ object FileSystem {
         Log.info("FileSystem", "Loading Configuration...")
         Log.Indent++
 
-        openFile("System.CFG", FileAccessMode.Reader)
+        openFile("System.CFG", FileAccessMode.Read)
             ?.use { inp ->
                 var line = inp.readString()
 
@@ -148,7 +148,7 @@ object FileSystem {
         // - Write out the settings of the engine or game to a file...
         // - Implement methods for saving out game state data?
 
-        openFile("System.CFG", FileAccessMode.Writer)
+        openFile("System.CFG", FileAccessMode.Write)
             ?.use { out ->
 
                 //Print all CVars in alphabetical order

@@ -14,8 +14,8 @@ class SysEventJournal (mode: SysEventJournalMode){
         _filePath = DefaultPath
         when (mode) {
             SysEventJournalMode.Disabled -> _disposed = true
-            SysEventJournalMode.Observer -> FileSystem.openFile(_filePath, FileAccessMode.Writer)
-            SysEventJournalMode.Playback -> FileSystem.openFile(_filePath, FileAccessMode.Reader)
+            SysEventJournalMode.Observer -> FileSystem.openFile(_filePath, FileAccessMode.Write)
+            SysEventJournalMode.Playback -> FileSystem.openFile(_filePath, FileAccessMode.Read)
         }
     }
 
