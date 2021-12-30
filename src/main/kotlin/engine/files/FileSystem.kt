@@ -9,8 +9,10 @@ import logging.Log
 import java.io.File
 import java.io.IOException
 
+@Deprecated("")
 object FileSystem {
     //TODO: Check if file access is allowed when opening or closing.
+
     val RegisteredExtensions = HashMap(
         mapOf(
             "txt" to FileType.Strings,
