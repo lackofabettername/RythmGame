@@ -1,4 +1,4 @@
-package engine.sortMe
+package engine
 
 import engine.application.Application
 import engine.application.RenderLogic
@@ -9,11 +9,14 @@ import engine.events.SysEvent
 import engine.events.SysEventManager
 import engine.events.SysEventType
 import engine.files.FileSystem
+import engine.files2.FileSystem2
 import engine.network.common.NetAddressable
 import engine.network.common.NetManager
 import engine.network.common.NetPacket
 import engine.network.server.Server
 import engine.network.server.ServerGameLogic
+import engine.sortMe.Client
+import engine.sortMe.ClientGameLogic
 import logging.Log
 import logging.style.Foreground
 import logging.style.Style
@@ -61,7 +64,7 @@ class Engine(
 
         Console = Console()
 
-        FileSystem.loadConfiguration(Console)
+        Console.loadConfiguration()
         Console.registerCVarIfAbsent("sys_MaxRenderFPS", 0) // Uncapped
         Console.registerCVarIfAbsent("sys_VSync", false)
 
@@ -118,7 +121,7 @@ class Engine(
         _network.close()
         Window?.close()
         Console.close()
-        FileSystem.close()
+        FileSystem2.close()
         _isRunning = false
         Log.Indent--
         Log.info("Engine", "Shutdown complete.")

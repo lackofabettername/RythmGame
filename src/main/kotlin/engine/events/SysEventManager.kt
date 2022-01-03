@@ -1,8 +1,7 @@
 package engine.events
 
 import engine.console.ConsoleCommand
-import engine.sortMe.Engine
-import logging.Log
+import engine.Engine
 import logging.Log.warn
 import java.util.concurrent.ArrayBlockingQueue
 

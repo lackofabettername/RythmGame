@@ -1,5 +1,8 @@
 package engine.console
 
+import engine.console.CVarValueType.*
+import engine.files.FileAccessMode
+import engine.files2.FileSystem2
 import logging.Log
 import logging.style.Font
 import logging.style.Foreground
@@ -152,6 +155,42 @@ class Console() : AutoCloseable {
     }
 
     //endregion
+
+    fun loadConfiguration() {
+        //TODO:
+        // - Read console variables from a file.
+        // - Undecided: Variables must already exist.
+        // --- Defined by a game-specific manifest
+        // --- or from some kind of core systems registry.
+
+        Log.info("FileSystem", "Loading Configuration...")
+        Log.Indent++
+
+        FileSystem2.openFile("System.CFG", FileAccessMode.Read)?.use { inp ->
+            inp.Reader.forEachLine { line ->
+                Log.trace("Console", line)
+
+                if (line.startsWith("CVar")) {
+                    val parts = line.split(", ")
+                    val name = parts[0].drop(5)
+                    val data = parts[2].dropLast(1)
+                    val cvar = when (parts[1]) {
+                        //@formatter:off
+                        Text.name  -> CVar(name, data)
+                        Value.name -> CVar(name, data.toInt())
+                        Flag.name  -> CVar(name, data.toBoolean())
+                        //@formatter:on
+                        else -> null
+                    }
+                    if (cvar != null)
+                        registerCVar(cvar)
+                }
+            }
+        }
+
+        Log.Indent--
+        Log.info("FileSystem", "Configuration Loaded")
+    }
 
     private fun mainLoop() {
         val input = Scanner(System.`in`)
