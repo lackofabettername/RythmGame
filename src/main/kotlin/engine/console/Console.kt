@@ -2,19 +2,16 @@ package engine.console
 
 import engine.console.CVarValueType.*
 import engine.files.FileAccessMode
-import engine.files2.FileSystem2
+import engine.files.FileSystem
 import logging.Log
 import logging.style.Font
 import logging.style.Foreground
 import logging.style.Style
-import java.lang.AutoCloseable
 import misc.StringSimilarity
 import java.io.IOException
-import java.lang.InterruptedException
 import java.util.*
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.function.Consumer
-import kotlin.collections.HashMap
 
 @Suppress("unused")
 class Console() : AutoCloseable {
@@ -166,14 +163,14 @@ class Console() : AutoCloseable {
         Log.info("FileSystem", "Loading Configuration...")
         Log.Indent++
 
-        FileSystem2.openFile("System.CFG", FileAccessMode.Read)?.use { inp ->
+        FileSystem.openFile("System.CFG", FileAccessMode.Read)?.use { inp ->
             inp.Reader.forEachLine { line ->
                 Log.trace("Console", line)
 
                 if (line.startsWith("CVar")) {
                     val parts = line.split(", ")
                     val name = parts[0].drop(5)
-                    val data = parts[2].dropLast(1)
+                    val data = parts[2].replace(Regex("}.*"), "")
                     val cvar = when (parts[1]) {
                         //@formatter:off
                         Text.name  -> CVar(name, data)
@@ -186,11 +183,34 @@ class Console() : AutoCloseable {
                         registerCVar(cvar)
                 }
             }
+            inp.Writer.flush()
         }
 
         Log.Indent--
         Log.info("FileSystem", "Configuration Loaded")
     }
+
+    fun writeConfiguration() {
+        //TODO:
+        // - Write out the settings of the engine or game to a file...
+        // - Implement methods for saving out game state data?
+
+        if ("System.CFG" !in FileSystem) {
+            FileSystem.openFile("System.CFG", FileAccessMode.Write, true)
+        }
+
+        //todo: replace use with let and only update the needed parts, instead of clearing everything and rewriting it
+        FileSystem["System.CFG"]?.use { out ->
+            //Print all CVars in alphabetical order
+            for (cvar in cVars
+                .stream()
+                .sorted(Comparator.comparing { s -> s.Name.lowercase() })
+            ) {
+                out.Writer.write("CVar{${cvar.Name}, ${cvar.Type}, ${cvar.get()}}\n")
+            }
+        }
+    }
+
 
     private fun mainLoop() {
         val input = Scanner(System.`in`)

@@ -1,139 +1,34 @@
 package engine.files
 
-import logging.Log
-import java.io.*
+import java.io.ObjectInputStream
+import java.io.ObjectOutputStream
+import java.nio.channels.Channels
+import java.nio.channels.FileChannel
 
-class FileAccess(
-    file: File,
-    val Mode: FileAccessMode,
-    val Type: FileType
-) : AutoCloseable {
-    private val _writer: Writer<*>?
-    private val _reader: Reader<*>?
+class FileAccess(private val _channel: FileChannel, val AccessMode: FileAccessMode) : AutoCloseable {
+    val IsOpen get() = _channel.isOpen
 
-    init {
-        when (Type) {
-            FileType.Objects -> {
-                _writer = if (Mode === FileAccessMode.Write) ObjectWriter(file) else null
-                _reader = if (Mode === FileAccessMode.Read) ObjectReader(file) else null
-            }
-            FileType.Strings -> {
-                _writer = if (Mode === FileAccessMode.Write) StringWriter(file) else null
-                _reader = if (Mode === FileAccessMode.Read) StringReader(file) else null
-            }
-            else -> {
-                _writer = null
-                _reader = null
-            }
-        }
+    //Stores the flush functions of the different writers that may be initiated
+    private val _onClose = ArrayList<() -> Unit>()
+
+    val Reader by lazy { Channels.newReader(_channel, FileSystem.Charset).buffered() }
+    val Writer by lazy {
+        val newWriter = Channels.newWriter(_channel, Charsets.UTF_8)
+        _onClose += { newWriter.flush() }
+        newWriter
+    }
+
+    val OIS by lazy { ObjectInputStream(Channels.newInputStream(_channel)) }
+    val OOS by lazy {
+        val oos = ObjectOutputStream(Channels.newOutputStream(_channel))
+        _onClose += { oos.flush() }
+        oos
     }
 
     override fun close() {
-        try {
-            _writer?.close()
-            _reader?.close()
-        } catch (e: Exception) {
-            Log.error("FileAccess", e)
-        }
-    }
-
-    fun readObject(): Any? {
-        if (Mode !== FileAccessMode.Read) return null
-        if (Type !== FileType.Objects) return null
-        try {
-            return (_reader as ObjectReader).read()
-        } catch (e: IOException) {
-            Log.error("", e)
-        } catch (e: ClassNotFoundException) {
-            Log.error("", e)
-        }
-        return null
-    }
-
-    fun writeObject(`object`: Any?) {
-        if (Mode != FileAccessMode.Write) return
-        if (Type != FileType.Objects) return
-        try {
-            (_writer as ObjectWriter).write(`object`)
-        } catch (e: IOException) {
-            Log.error("", e)
-        }
-    }
-
-    fun readString(): String? {
-        if (Mode !== FileAccessMode.Read) return null
-        if (Type !== FileType.Strings) return null
-        try {
-            return (_reader as StringReader).read()
-        } catch (e: IOException) {
-            Log.error("", e)
-        }
-        return null
-    }
-
-    fun writeString(string: String?) {
-        if (Mode != FileAccessMode.Write) return
-        if (Type != FileType.Strings) return
-        try {
-            (_writer as StringWriter).write(string)
-        } catch (e: IOException) {
-            Log.error("", e)
-        }
-    }
-
-    class ObjectWriter constructor(file: File) : Writer<Any?>() {
-        private val _stream = ObjectOutputStream(FileOutputStream(file))
-
-        @Throws(IOException::class)
-        override fun write(data: Any?) {
-            _stream.writeObject(data)
-        }
-
-        @Throws(IOException::class)
-        override fun close() {
-            _stream.close()
-        }
-    }
-
-    class StringWriter(file: File) : Writer<String?>() {
-        private val _stream = PrintWriter(file)
-
-        @Throws(IOException::class)
-        override fun write(data: String?) {
-            _stream.println(data)
-        }
-
-        override fun close() {
-            _stream.flush()
-            _stream.close()
-        }
-    }
-
-    class ObjectReader(file: File) : Reader<Any?>() {
-        private val _stream = ObjectInputStream(FileInputStream(file))
-
-        @Throws(IOException::class, ClassNotFoundException::class)
-        override fun read(): Any {
-            return _stream.readObject()
-        }
-
-        @Throws(IOException::class)
-        override fun close() {
-            _stream.close()
-        }
-    }
-
-    class StringReader(file: File) : Reader<String?>() {
-        private val _stream = BufferedReader(FileReader(file))
-
-        @Throws(IOException::class)
-        override fun read(): String? {
-            return _stream.readLine()
-        }
-
-        @Throws(IOException::class)
-        override fun close() {
-            _stream.close()
-        }
+        if (!IsOpen) return
+        _onClose.forEach { it() }     // Flush all writers that may be active
+        _channel.force(true) // Force the channel to update the file
+        _channel.close()
     }
 }

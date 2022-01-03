@@ -1,6 +1,5 @@
 package engine.application.rendering
 
-import engine.files.FileSystem
 import logging.Log
 import org.lwjgl.opengl.GL20C.*
 
@@ -27,7 +26,7 @@ class Shader {
 
     //region Constructor
     fun createVertexShader(fileName: String) {
-        val shaderCode = FileSystem.readLine(fileName)
+        //val shaderCode = FileSystem.readLine(fileName)
         //val shaderCode = Utils.loadResource(fileName + if (fileName.contains(".")) "" else ".vert")
         //Log.trace("ShaderProgram", "\n$shaderCode")
         //vertID = createShader(shaderCode, GL_VERTEX_SHADER)

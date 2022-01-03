@@ -1,168 +1,102 @@
-@file:Suppress("unused")
-
 package engine.files
 
-import engine.console.CVar
-import engine.console.CVarValueType
-import engine.console.Console
+import engine.files.FileAccessMode.*
 import logging.Log
-import java.io.File
-import java.io.IOException
+import java.io.*
+import java.nio.charset.Charset as CharsetClass
 
-@Deprecated("")
 object FileSystem {
-    //TODO: Check if file access is allowed when opening or closing.
+    val Charset: CharsetClass by lazy { CharsetClass.defaultCharset() }
 
-    val RegisteredExtensions = HashMap(
-        mapOf(
-            "txt" to FileType.Strings,
-            "ser" to FileType.Objects,
-            "CFG" to FileType.Strings,
-        )
-    )
     private val _files = HashMap<String, FileAccess>()
 
-    fun close() {
-        for (fileIO in _files.values) {
-            fileIO.close()
+    fun openFile(fileName: String, accessMode: FileAccessMode, createIfMissing: Boolean = false): FileAccess? {
+        return openActual(fileName, accessMode, File(fileName), createIfMissing)
+    }
+
+    fun openResource(fileName: String, accessMode: FileAccessMode, createIfMissing: Boolean = false): FileAccess? {
+        val uri = javaClass.classLoader.getResource(fileName)?.toURI()
+        return openActual(fileName, accessMode, uri?.let { File(uri) } ?: File(""), createIfMissing)
+    }
+
+    private fun openActual(
+        fileName: String,
+        accessMode: FileAccessMode,
+        file: File,
+        createIfMissing: Boolean
+    ): FileAccess? {
+        if (fileName in this) {
+            Log.warn("FileSystem", "$fileName is already open! Closing the file...")
+            closeFile(fileName)
         }
+
+        if (!file.exists()) {
+            if (!createIfMissing) {
+                Log.warn("FileSystem", "$fileName doesn't exist!")
+                return null
+            }
+
+            Log.info("FileSystem", "$fileName is missing. Creating it...")
+            file.createNewFile()
+        }
+
+        val fileAccess = FileAccess(
+            when (accessMode) {
+                //@formatter:off
+                    Read      -> FileInputStream(file).             channel
+                    Write     -> FileOutputStream(file).            channel
+                    ReadWrite -> RandomAccessFile(file, "rw").channel
+                    //@formatter:on
+            }, accessMode
+        )
+        _files[fileName] = fileAccess
+        return fileAccess
+
+    }
+
+    fun closeFile(fileName: String) {
+        _files[fileName]?.close()
+        _files -= fileName
+    }
+
+    fun close() {
+        _files.values.forEach { it.close() }
         _files.clear()
     }
 
-    fun openFile(fileName: String, mode: FileAccessMode, type: FileType): FileAccess? {
-        return try {
-            val fileIO = FileAccess(File(fileName), mode, type)
-            val preexisting = getFileAccessor(fileName)
+    operator fun get(fileName: String) = _files[fileName]
 
-            if (preexisting != null) {
-                preexisting.close()
-                _files.replace(fileName, fileIO)
-            } else {
-                _files[fileName] = fileIO
-            }
-
-            fileIO
-        } catch (e: IOException) {
-            Log.error("FileSystem", "Could not open file $fileName", e)
-            null
+    /**
+     * @return null if the file doesn't exist, is closed or the access mode isn't correct. Otherwise, returns the file
+     */
+    operator fun get(fileName: String, accessMode: FileAccessMode) = _files[fileName].also { file ->
+        if (file == null) return null
+        if (!file.IsOpen) {
+            _files -= fileName
+            return null
         }
+        if (file.AccessMode != accessMode && file.AccessMode != ReadWrite) return null
     }
 
-    @JvmStatic
-    fun openFile(fileName: String, mode: FileAccessMode): FileAccess? {
-        //val extension = fileName.substring(fileName.lastIndexOf(".") + 1)
-        val extension = File(fileName).extension
-        val type = RegisteredExtensions.getOrDefault(extension, FileType.Unkown)
-        if (type == FileType.Unkown) Log.warn("FileSystem", "Unknown fileExtension: .$extension")
-        return openFile(fileName, mode, type)
+    operator fun contains(fileName: String) = fileName in _files && _files[fileName]!!.IsOpen
+
+    /**
+     * Writes the string to the given file.
+     */
+    fun writeString(fileName: String, string: String) {
+        this[fileName, Write]?.Writer?.write(string)
     }
 
-    @JvmStatic
-    fun closeFile(fileName: String) {
-        val fileIO = getFileAccessor(fileName)
-        if (fileIO != null) {
-            fileIO.close()
-            _files.remove(fileName)
-        }
+    fun appendString(fileName: String, string: String) {
+        this[fileName, Write]?.Writer?.append(string)
     }
 
-    @JvmStatic
-    fun readObject(fileName: String): Any? {
-        val reader = getFileAccessor(fileName)
-        return if (reader != null && reader.Mode == FileAccessMode.Read) {
-            reader.readObject()
-        } else {
-            Log.warn("FileSystem", "Attempting to write to an unopened or read-only file!")
-            null
-        }
+    fun readLine(fileName: String) = this[fileName, Read]?.Reader?.readLine()
+
+
+    fun writeObject(fileName: String, `object`: Serializable) {
+        this[fileName, Write]?.OOS?.writeObject(`object`)
     }
 
-    @JvmStatic
-    fun writeObject(fileName: String, `object`: Any?) {
-        val writer = getFileAccessor(fileName)
-        if (writer != null && writer.Mode === FileAccessMode.Write) {
-            writer.writeObject(`object`)
-        } else {
-            Log.warn("FileSystem", "Attempting to write to an unopened or read-only file!")
-        }
-    }
-
-    fun readString(fileName: String): String? {
-        val reader = getFileAccessor(fileName)
-        if (reader != null && reader.Mode === FileAccessMode.Read) {
-            return reader.readString()
-        } else {
-            Log.warn("FileSystem", "Attempting to write to an unopened or read-only file!")
-        }
-        return null
-    }
-
-    fun writeString(fileName: String, string: String?) {
-        val writer = getFileAccessor(fileName)
-        if (writer != null && writer.Mode === FileAccessMode.Write) {
-            writer.writeString(string)
-        } else {
-            Log.warn("FileSystem", "Attempting to write to an unopened or read-only file!")
-        }
-    }
-
-    fun loadConfiguration(console: Console) {
-        //TODO:
-        // - Read console variables from a file.
-        // - Undecided: Variables must already exist.
-        // --- Defined by a game-specific manifest
-        // --- or from some kind of core systems registry.
-
-        Log.info("FileSystem", "Loading Configuration...")
-        Log.Indent++
-
-        openFile("System.CFG", FileAccessMode.Read)
-            ?.use { inp ->
-                var line = inp.readString()
-
-                while (line != null) {
-                    Log.trace("FileSystem", line)
-
-                    if (line.startsWith("CVar")) {
-                        val parts = line.split(", ")
-                        val name = parts[0].drop(5)
-                        val data = parts[2].dropLast(1)
-                        val cvar = when (parts[1]) {
-                            CVarValueType.Text.name -> CVar(name, data)
-                            CVarValueType.Value.name -> CVar(name, data.toInt())
-                            CVarValueType.Flag.name -> CVar(name, data.toBoolean())
-                            else -> null
-                        }
-                        if (cvar != null)
-                            console.registerCVar(cvar)
-                    }
-
-                    line = inp.readString()
-                }
-            }
-
-        Log.Indent--
-        Log.info("FileSystem", "Configuration Loaded")
-    }
-
-    fun writeConfiguration(console: Console) {
-        //TODO:
-        // - Write out the settings of the engine or game to a file...
-        // - Implement methods for saving out game state data?
-
-        openFile("System.CFG", FileAccessMode.Write)
-            ?.use { out ->
-
-                //Print all CVars in alphabetical order
-                for (cvar in console.cVars.stream()
-                    .sorted { a, b -> a.Name.lowercase().compareTo(b.Name.lowercase()) })
-                {
-                    out.writeString("CVar{${cvar.Name}, ${cvar.Type}, ${cvar.get()}}")
-                }
-            }
-    }
-
-    private fun getFileAccessor(fileName: String): FileAccess? {
-        return _files.getOrDefault(fileName, null)
-    }
+    fun readObject(fileName: String) = this[fileName, Read]?.OIS?.readObject()
 }

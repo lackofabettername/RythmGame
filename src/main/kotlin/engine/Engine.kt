@@ -2,14 +2,15 @@ package engine
 
 import engine.application.Application
 import engine.application.RenderLogic
-import engine.application.events.*
+import engine.application.events.ApplicationEvent
+import engine.application.events.InputEvent
+import engine.application.events.InputEventType
 import engine.console.Console
 import engine.console.ConsoleCommand
 import engine.events.SysEvent
 import engine.events.SysEventManager
 import engine.events.SysEventType
 import engine.files.FileSystem
-import engine.files2.FileSystem2
 import engine.network.common.NetAddressable
 import engine.network.common.NetManager
 import engine.network.common.NetPacket
@@ -121,7 +122,7 @@ class Engine(
         _network.close()
         Window?.close()
         Console.close()
-        FileSystem2.close()
+        FileSystem.close()
         _isRunning = false
         Log.Indent--
         Log.info("Engine", "Shutdown complete.")
@@ -245,7 +246,7 @@ class Engine(
             if (Window != null)
                 _events.captureInputs() // Flush the input events once per frame...
 
-            FileSystem.writeConfiguration(Console) //TODO: only write when CVars are updated?
+            Console.writeConfiguration() //TODO: only write when CVars are updated?
 
             //Update loop timing if needed.
             if (maxFPS.Dirty || vSync.Dirty) {
