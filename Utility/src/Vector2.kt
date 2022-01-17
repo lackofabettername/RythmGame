@@ -8,7 +8,7 @@ import kotlin.random.Random
 class Vector2(
     var x: Float = 0f,
     var y: Float = 0f
-) : Serializable {
+) : Serializable, Vector {
 
     //region Constructors
     constructor(v: Vector2) : this(v.x, v.y)
@@ -16,6 +16,8 @@ class Vector2(
     constructor (values: FloatArray) : this(values[0], values[1])
 
     constructor (value: Float) : this(x = value, y = value)
+
+    override fun getDimension() = 2
     //endregion
 
     //region Conversion
@@ -168,7 +170,7 @@ class Vector2(
     }
     //endregion
 
-    operator fun get(axis: Int): Float {
+    override operator fun get(axis: Int): Float {
         require(axis in 0..1)
         return when (axis) {
             0 -> x
@@ -362,16 +364,15 @@ class Vector2(
             ) * 2 - 1).normalize()
         }
 
-        fun random(magnitude: Float): Vector2 {
-            return random() * magnitude
-        }
+        fun random(magnitude: Float = 1f) = Vector2(
+            Math.random().toFloat() * 2 - 1,
+            Math.random().toFloat() * 2 - 1,
+        ).normalize() * magnitude
 
-        fun random(): Vector2 {
-            return (Vector2(
-                Math.random().toFloat(),
-                Math.random().toFloat(),
-            ) * 2 - 1).normalize()
-        }
+        fun fromAngle(angle: Float, length: Float = 1f) = Vector2(
+            cos(angle) * length,
+            sin(angle) * length
+        )
         //endregion
 
         fun toFloatArray(v: Vector2): FloatArray {

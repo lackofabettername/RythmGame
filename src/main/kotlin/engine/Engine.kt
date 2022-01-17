@@ -102,6 +102,7 @@ class Engine(
             mainLoop()
         } catch (e: Throwable) {
             try {
+                Log.Indent = 0
                 Log.error("Engine", "A catastrophic error occurred.", e)
             } catch (ignored: Throwable) {
                 System.err.println("A catastrophic error occurred.\n(printing again as the Logger may not be functional)")
@@ -114,6 +115,8 @@ class Engine(
     }
 
     private fun shutdown() {
+        Log.Indent = 0
+
         Log.info("Engine", "Shutting down...")
         Log.Indent++
         _client?.shutdown()
@@ -200,20 +203,44 @@ class Engine(
         while (!_commandQueue.isEmpty()) {
 
             val command = _commandQueue.remove()
-            Log.trace("Engine", "Handling command: ${Foreground.LightMagenta}${command.Text}${Style.Reset}...")
+            Log.trace(
+                "Engine",
+                "Handling command: ${Foreground.Blue}${command.Text}(${
+                    command.Args.contentDeepToString().drop(1).dropLast(1)
+                })${Style.Reset}..."
+            )
 
-            when (command.Text) {
-                "exit" -> _isRunning = false
+            with(command) {
+                when (Text) {
+                    "exit" -> _isRunning = false
 
-                //"sv_shutdown" -> _server.shutdown()
+                    "restart" -> {
+                        if (Args.size == 1) {
+                            when (Args[0]) {
+                                "Application" -> {
+                                    Window?.close()
+                                    Window?.initialize()
+                                }
+                                else -> {
+                                    Log.warn("Unknown keyword, ${Foreground.Blue}Application${Style.Reset} is supported.")
+                                }
+                            }
+                        }
+                    }
 
-                else -> {
-                    val cvar = Console.getCVar(command.Text)
-                    if (cvar != null) {
-                        when (command.Args.size) {
-                            0 -> Log.info("Engine", "${cvar.get()}")
-                            1 -> cvar.set(command.Args[0])
-                            else -> Log.warn("Engine", "Unknown command")
+                    //"sv_shutdown" -> _server.shutdown()
+
+                    else -> {
+                        val cvar = Console.getCVar(Text)
+                        if (cvar != null) {
+                            when (Args.size) {
+                                0 -> Log.info("Engine", "$cvar")
+                                1 -> {
+                                    cvar.set(Args[0])
+                                    Log.info("Engine", "$cvar")
+                                }
+                                else -> Log.warn("Engine", "Unknown command")
+                            }
                         }
                     }
                 }
@@ -239,6 +266,7 @@ class Engine(
         //endregion
 
         while (_isRunning) {
+            Log.Indent = 0
 
             // ---------------------
             //  Core systems update

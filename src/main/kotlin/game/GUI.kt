@@ -2,7 +2,6 @@ package game
 
 import engine.application.Window
 import imgui.ImGui
-import imgui.ImGuiIO
 import imgui.flag.ImGuiConfigFlags
 import imgui.gl3.ImGuiImplGl3
 import imgui.glfw.ImGuiImplGlfw
@@ -11,7 +10,7 @@ import org.lwjgl.glfw.GLFW.*
 
 class GUI(
     private var _windows: Array<GUIWindow> = arrayOf()
-    ) {
+) {
 
     private lateinit var _parent: Window
     private val _imGuiGlfw = ImGuiImplGlfw()

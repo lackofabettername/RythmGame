@@ -4,43 +4,42 @@ import logging.Log
 import org.lwjgl.glfw.*
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.opengl.GL
-import org.lwjgl.opengl.GL11.*
-import org.lwjgl.opengl.GL32.GL_PROGRAM_POINT_SIZE
+import org.lwjgl.opengl.GL11C.*
 import org.lwjgl.system.MemoryUtil
 import java.io.*
 
 class Window(
     val title: String,
 ) {
-    var Handle: Long = 0; private set
+    var Handle = 0L; private set
+    var Initialized = false; private set
 
-    var resizable = true
+    var Resizable = true
+    var IsResized = false
+
+    var Width = 0
         set(value) {
+            if (!Resizable) return
             field = value
-            glfwWindowHint(GLFW_RESIZABLE, if (value) GL_TRUE else GL_FALSE)
+            if (!Initialized) return
+            glfwSetWindowSize(Handle, Width, Height)
         }
 
-    var width = 0
-        internal set(value) {
-            if (!resizable) return
+    var Height = 0
+        set(value) {
+            if (!Resizable) return
             field = value
-            glfwSetWindowSize(Handle, width, height)
+            if (!Initialized) return
+            glfwSetWindowSize(Handle, Width, Height)
         }
-    var height = 0
-        internal set(value) {
-            if (!resizable) return
-            field = value
-            glfwSetWindowSize(Handle, width, height)
-        }
-    val aspectRatio get() = width.toFloat() / height.toFloat()
 
-    var vSync = false
+    val AspectRatio get() = Width.toFloat() / Height.toFloat()
+
+    var VSync = false
         set(value) {
             field = value
             glfwSwapInterval(if (value) 1 else 0)
         }
-
-    var isResized = false
 
     fun initialize(vSync: Boolean, width: Int, height: Int, resizable: Boolean) {
 
@@ -73,26 +72,27 @@ class Window(
         // Initialize GLFW. Most GLFW functions will not work before doing this.
         check(glfwInit()) { "Unable to initialize GLFW" }
 
+        this.Width = width;
+        this.Height = height;
+        this.Resizable = resizable
+
         glfwDefaultWindowHints() // optional, the current window hints are already the default
         glfwWindowHint(GLFW_VISIBLE, GL_FALSE) // the window will stay hidden after creation
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3)
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2)
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, GLMajorVersion)
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, GLMinorVersion)
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE)
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE)
+        glfwWindowHint(GLFW_RESIZABLE, if (Resizable) GL_TRUE else GL_FALSE)
 
         // Create the window
-        Handle = glfwCreateWindow(100, 100, title, MemoryUtil.NULL, MemoryUtil.NULL)
+        Handle = glfwCreateWindow(Width, Height, title, MemoryUtil.NULL, MemoryUtil.NULL)
         check(Handle != MemoryUtil.NULL) { "Failed to create the GLFW window" }
-
-        this.width = width;
-        this.height = height;
-        this.resizable = resizable //DO NOT MOVE!
 
         // Setup resize callback
         glfwSetFramebufferSizeCallback(Handle) { _, width: Int, height: Int ->
-            this.width = width
-            this.height = height
-            isResized = true
+            this.Width = width
+            this.Height = height
+            IsResized = true
         }
 
         // Get the resolution of the primary monitor
@@ -110,7 +110,7 @@ class Window(
         glfwMakeContextCurrent(Handle)
 
         //DO NOT MOVE!
-        this.vSync = vSync
+        this.VSync = vSync
 
         // Make the window visible
         glfwShowWindow(Handle)
@@ -119,9 +119,9 @@ class Window(
         // Set the clear color
         setClearColor(0.0f, 0.0f, 0.0f, 0.0f)
 
-        glEnable(GL_DEPTH_TEST)
-        glEnable(GL_CULL_FACE)
-        glEnable(GL_PROGRAM_POINT_SIZE)
+        //glEnable(GL_DEPTH_TEST)
+        //glEnable(GL_CULL_FACE)
+        //glEnable(GL_PROGRAM_POINT_SIZE)
         //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
         //glCullFace(GL_BACK)
     }
@@ -137,6 +137,38 @@ class Window(
     val ShouldClose: Boolean
         get() = glfwWindowShouldClose(Handle)
 
+    var DepthTest: Boolean
+        get() = glGetBoolean(GL_DEPTH_TEST)
+        set(state: Boolean) {
+            if (state)
+                glEnable(GL_DEPTH_TEST)
+            else
+                glDisable(GL_DEPTH_TEST)
+        }
+
+    var CullFace: Boolean
+        get() = glGetBoolean(GL_CULL_FACE)
+        set(state: Boolean) {
+            if (state)
+                glEnable(GL_CULL_FACE)
+            else
+                glDisable(GL_CULL_FACE)
+        }
+
+    var Blend: Boolean
+        get() = glGetBoolean(GL_BLEND)
+        set(state: Boolean) {
+            if (state)
+                glEnable(GL_BLEND)
+            else
+                glDisable(GL_BLEND)
+        }
+
+    fun updateViewport(x: Int = 0, y: Int = 0, w: Int = Width, h: Int = Height) {
+        glViewport(x, y, w, h)
+    }
+
+    //<editor-fold desc="Callbacks ">
     fun setKeyCallback(callback: GLFWKeyCallbackI) {
         glfwSetKeyCallback(Handle, callback)
     }
@@ -156,6 +188,7 @@ class Window(
     fun setScrollCallback(callback: GLFWScrollCallbackI) {
         glfwSetScrollCallback(Handle, callback)
     }
+    //</editor-fold>
 
     fun pollEvents() {
         glfwPollEvents()
@@ -170,6 +203,9 @@ class Window(
     }
 
     companion object {
+        val GLMajorVersion = 3
+        val GLMinorVersion = 3
+
         val ColorBuffer = GL_COLOR_BUFFER_BIT
         val DepthBuffer = GL_DEPTH_BUFFER_BIT
         val StencilBuffer = GL_STENCIL_BUFFER_BIT

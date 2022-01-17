@@ -1,9 +1,5 @@
 package engine.console
 
-import logging.Log
-import java.io.Externalizable
-import java.io.ObjectInput
-import java.io.ObjectOutput
 import java.util.function.Consumer
 
 class CVar(
@@ -84,13 +80,22 @@ class CVar(
                 else -> false
             }
         }
-        Dirty = true
     }
 
     fun get() = when (Type) {
         CVarValueType.Text -> Text
         CVarValueType.Value -> Value
         CVarValueType.Flag -> Flag
+    }
+
+    override fun toString(): String {
+        return "$Name: ${
+            when (Type) {
+                CVarValueType.Text -> Text
+                CVarValueType.Value -> Value
+                CVarValueType.Flag -> Flag
+            }
+        }"
     }
 
     //region Constructors

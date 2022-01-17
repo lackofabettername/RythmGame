@@ -1,11 +1,17 @@
 package engine.application.rendering
 
+import engine.files.FileAccessMode
+import engine.files.FileSystem
 import logging.Log
 import org.lwjgl.opengl.GL20C.*
+import org.lwjgl.opengl.GL32.GL_GEOMETRY_SHADER
+import util.Matrix3x3
+import util.Matrix4x4
 
 import util.Vector2
 import util.Vector3
 
+//If uniforms aren't being set, you may have forgotten to bind the shader
 class Shader {
     val ID = glCreateProgram()
 
@@ -13,48 +19,62 @@ class Shader {
         check(ID != 0) { "Could not create ShaderProgram" }
     }
 
-    var vertID = 0
+    var VertID = 0
         private set
 
-    var geomID = 0
+    var GeomID = 0
         private set
 
-    var fragID = 0
+    var FragID = 0
         private set
 
-    private val uniforms = HashMap<String, Int>()
+    private val _uniforms = HashMap<String, Int>()
 
     //region Constructor
     fun createVertexShader(fileName: String) {
-        //val shaderCode = FileSystem.readLine(fileName)
-        //val shaderCode = Utils.loadResource(fileName + if (fileName.contains(".")) "" else ".vert")
-        //Log.trace("ShaderProgram", "\n$shaderCode")
-        //vertID = createShader(shaderCode, GL_VERTEX_SHADER)
+        FileSystem.openResource(
+            fileName + if (fileName.contains(".")) "" else ".vert",
+            FileAccessMode.Read
+        )?.use {
+            val shaderCode = it.Reader.lineSequence().joinToString("\n")
+            VertID = createShader(shaderCode, GL_VERTEX_SHADER)
+        }
     }
 
     fun createGeometryShader(fileName: String) {
-        TODO("Load File")
-        //val shaderCode = Utils.loadResource(fileName + if (fileName.contains(".")) "" else ".geom")
-        //Log.trace("ShaderProgram", "\n$shaderCode")
-        //geomID = createShader(shaderCode, GL_GEOMETRY_SHADER)
+        FileSystem.openResource(
+            fileName + if (fileName.contains(".")) "" else ".geom",
+            FileAccessMode.Read
+        )?.use {
+            val shaderCode = it.Reader.lineSequence().joinToString("\n")
+            VertID = createShader(shaderCode, GL_GEOMETRY_SHADER)
+        }
     }
 
     fun createFragmentShader(fileName: String) {
-        TODO("Load File")
-        //val shaderCode = Utils.loadResource(fileName + if (fileName.contains(".")) "" else ".frag")
-        //Log.trace("ShaderProgram", "\n$shaderCode")
-        //fragID = createShader(shaderCode, GL_FRAGMENT_SHADER)
+        FileSystem.openResource(
+            fileName + if (fileName.contains(".")) "" else ".frag",
+            FileAccessMode.Read
+        )?.use {
+            val shaderCode = it.Reader.lineSequence().joinToString("\n")
+            VertID = createShader(shaderCode, GL_FRAGMENT_SHADER)
+        }
     }
 
     private fun createShader(shaderCode: String, shaderType: Int): Int {
+        Log.trace(
+            "ShaderProgram",
+            "Creating a ${_typeNameMap[shaderType]} shader...\n$shaderCode"
+        )
+
         val shaderID = glCreateShader(shaderType)
-        check(shaderID != 0) { "Error creating shader. Type: $shaderType" }
+        check(shaderID != 0) { "Error creating shader. Type: ${_typeNameMap[shaderType]}" }
 
         glShaderSource(shaderID, shaderCode)
         glCompileShader(shaderID)
 
         check(glGetShaderi(shaderID, GL_COMPILE_STATUS) != 0) {
-            "Error compiling Shader code: ${
+            "Error compiling ${_typeNameMap[shaderType]} Shader code: ${
                 glGetShaderInfoLog(shaderID, 1024)
             }"
         }
@@ -70,7 +90,7 @@ class Shader {
 
         require(uniformLocation >= 0) { "Could not find uniform: $uniform" }
 
-        uniforms[uniform] = uniformLocation
+        _uniforms[uniform] = uniformLocation
     }
 
     fun createUniforms(vararg uniforms: String) {
@@ -95,10 +115,18 @@ class Shader {
         glUniform3f(getUniform(uniform), value.x, value.y, value.z)
     }
 
+    fun setUniform(uniform: String, value: Matrix3x3, transpose: Boolean = false) {
+        glUniformMatrix3fv(getUniform(uniform), !transpose, value.values)
+    }
+
+    fun setUniform(uniform: String, value: Matrix4x4, transpose: Boolean = false) {
+        glUniformMatrix4fv(getUniform(uniform), !transpose, value.values)
+    }
+
     private fun getUniform(uniform: String): Int {
-        val uniform = uniforms[uniform]
-        require(uniform != null) { "Could not find uniform $uniform" }
-        return uniform
+        val id = _uniforms[uniform]
+        require(id != null) { "Could not find uniform $uniform" }
+        return id
     }
 
     fun link() {
@@ -110,22 +138,22 @@ class Shader {
             }"
         }
 
-        if (vertID != 0) {
-            glDetachShader(ID, vertID)
-            glDeleteProgram(vertID)
-            vertID = 0
+        if (VertID != 0) {
+            glDetachShader(ID, VertID)
+            glDeleteProgram(VertID)
+            VertID = 0
         }
 
-        if (geomID != 0) {
-            glDetachShader(ID, geomID)
-            glDeleteProgram(geomID)
-            geomID = 0
+        if (GeomID != 0) {
+            glDetachShader(ID, GeomID)
+            glDeleteProgram(GeomID)
+            GeomID = 0
         }
 
-        if (fragID != 0) {
-            glDetachShader(ID, fragID)
-            glDeleteProgram(fragID)
-            fragID = 0
+        if (FragID != 0) {
+            glDetachShader(ID, FragID)
+            glDeleteProgram(FragID)
+            FragID = 0
         }
 
         glValidateProgram(ID)
@@ -138,6 +166,10 @@ class Shader {
         glUseProgram(ID)
     }
 
+    fun unbind() {
+        glUseProgram(0)
+    }
+
     fun cleanup() {
         unbind()
 
@@ -147,6 +179,12 @@ class Shader {
     }
 
     companion object {
+        private val _typeNameMap = mapOf(
+            GL_VERTEX_SHADER to "Vertex",
+            GL_GEOMETRY_SHADER to "Geometry",
+            GL_FRAGMENT_SHADER to "Fragment",
+        )
+
         fun unbind() {
             glUseProgram(0)
         }

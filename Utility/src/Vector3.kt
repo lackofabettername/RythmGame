@@ -8,7 +8,7 @@ import kotlin.math.sqrt
 import kotlin.random.Random
 
 @Suppress("MemberVisibilityCanBePrivate")
-class Vector3(var x: Float = 0f, var y: Float = 0f, var z: Float = 0f) {
+class Vector3(var x: Float = 0f, var y: Float = 0f, var z: Float = 0f) : Vector {
 
     //region Constructors
     constructor(v: Vector3) : this(v.x, v.y, v.z)
@@ -18,6 +18,8 @@ class Vector3(var x: Float = 0f, var y: Float = 0f, var z: Float = 0f) {
     constructor (values: FloatArray) : this(values[0], values[1], values[2])
 
     constructor (value: Float) : this(x = value, y = value, z = value)
+
+    override fun getDimension() = 3
 
     //endregion
 
@@ -168,25 +170,7 @@ class Vector3(var x: Float = 0f, var y: Float = 0f, var z: Float = 0f) {
     }
     //endregion
 
-    fun cross(v: Vector3): Vector3 {
-        return Vector3(
-            y * v.z - z * v.y,
-            z * v.x - x * v.z,
-            x * v.y - y * v.x,
-        )
-    }
-
-    fun crossAssign(v: Vector3): Vector3 {
-        val x1 = y * v.z - z * v.y
-        val y1 = z * v.x - x * v.z
-        val z1 = x * v.y - y * v.x
-
-        x = x1; y = y1; z = z1
-
-        return this
-    }
-
-    operator fun get(axis: Int): Float {
+    override operator fun get(axis: Int): Float {
         require(axis in 0..2)
         return when (axis) {
             0 -> x
@@ -203,6 +187,24 @@ class Vector3(var x: Float = 0f, var y: Float = 0f, var z: Float = 0f) {
             1 -> y = value
             2 -> z = value
         }
+    }
+
+    fun cross(v: Vector3): Vector3 {
+        return Vector3(
+            y * v.z - z * v.y,
+            z * v.x - x * v.z,
+            x * v.y - y * v.x,
+        )
+    }
+
+    fun crossAssign(v: Vector3): Vector3 {
+        val x1 = y * v.z - z * v.y
+        val y1 = z * v.x - x * v.z
+        val z1 = x * v.y - y * v.x
+
+        x = x1; y = y1; z = z1
+
+        return this
     }
 
     //endregion
@@ -297,7 +299,7 @@ class Vector3(var x: Float = 0f, var y: Float = 0f, var z: Float = 0f) {
         return Vector3(this.x, this.y, this.z)
     }
 
-    override operator fun equals(other: Any?): Boolean {
+    override fun equals(other: Any?): Boolean {
         if (other !is Vector3) return false
         return x == other.x && y == other.y && z == other.z
     }
@@ -323,7 +325,7 @@ class Vector3(var x: Float = 0f, var y: Float = 0f, var z: Float = 0f) {
         val MAX by lazy { Vector3(+Float.MAX_VALUE, +Float.MAX_VALUE, +Float.MAX_VALUE) }
         val MIN by lazy { Vector3(-Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE) }
 
-        fun random(rng:Random, magnitude:Float): Vector3 {
+        fun random(rng: Random, magnitude: Float): Vector3 {
             return random(rng) * magnitude
         }
 

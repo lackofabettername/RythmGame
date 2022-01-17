@@ -16,8 +16,8 @@ class Application(
     private val _inputEventQueue = ArrayBlockingQueue<InputEvent>(QueueCapacity, true)
     private val _window = Window("Freehand")
 
-    val CanvasW by _window::width
-    val CanvasH by _window::height
+    val CanvasW by _window::Width
+    val CanvasH by _window::Height
 
     var isRunning = false
         private set
@@ -44,10 +44,10 @@ class Application(
             resizable.clean().Flag
         )
 
-        vSync.Listeners.add { vSync -> _window.vSync = vSync.clean().Flag }
-        windW.Listeners.add { windW -> _window.width = windW.clean().Value }
-        windH.Listeners.add { windH -> _window.height = windH.clean().Value }
-        resizable.Listeners.add { vSync -> _window.resizable = resizable.clean().Flag }
+        vSync.Listeners.add { vSync -> _window.VSync = vSync.clean().Flag }
+        windW.Listeners.add { windW -> _window.Width = windW.clean().Value }
+        windH.Listeners.add { windH -> _window.Height = windH.clean().Value }
+        resizable.Listeners.add { _ -> Log.warn("Changing window resizability requires restart") }
 
         setCallbacks()
 
@@ -135,8 +135,14 @@ class Application(
 
     fun render() {
         if (!_window.ShouldClose) {
+            if (_window.IsResized) {//TODO: Unbind any framebuffers?
+                _window.updateViewport()
+            }
+
             _logic.onRender()
             _window.swapBuffers()
+
+            _window.IsResized = false
         } else {
             close()
         }

@@ -1,8 +1,8 @@
 package logging
 
+import logging.LogLevel.*
 import logging.style.Foreground
 import logging.style.Style
-import logging.LogLevel.*
 
 @Suppress("unused")
 object Log {
@@ -18,13 +18,13 @@ object Log {
             TRACE = LogLevel >= Trace
             // @formatter:on
 
-            _logger.includeTrace = TRACE
+            _logger.IncludeTrace = TRACE
         }
 
     private val _logger = Logger()
 
-    var Indent by _logger::indent
-    var IncludeTrace by _logger::includeTrace
+    var Indent by _logger::Indent
+    var IncludeTrace by _logger::IncludeTrace
 
     // @formatter:off
     private var ERROR = false
@@ -46,19 +46,19 @@ object Log {
     }
 
     fun styleCategory(category: String, vararg styles: Style) {
-        if (category !in _logger.categoryStyles)
-            _logger.categoryStyles[category] = ArrayList()
-        _logger.categoryStyles[category]!! += styles
+        if (category !in _logger.CategoryStyles)
+            _logger.CategoryStyles[category] = ArrayList()
+        _logger.CategoryStyles[category]!! += styles
     }
 
     fun unstyleCategory(category: String, vararg styles: Style) {
-        if (category !in _logger.categoryStyles)
-            _logger.categoryStyles[category]!! -= styles
+        if (category !in _logger.CategoryStyles)
+            _logger.CategoryStyles[category]!! -= styles
     }
 
     fun clearCategoryStyle(category: String?) {
-        if (_logger.categoryStyles.containsKey(category))
-            _logger.categoryStyles.get(category)!!.clear()
+        if (_logger.CategoryStyles.containsKey(category))
+            _logger.CategoryStyles.get(category)!!.clear()
     }
 
     /**
