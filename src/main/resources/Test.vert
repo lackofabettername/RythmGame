@@ -11,9 +11,9 @@ out vec3 vertCol;
 
 void main() {
     vec3 pos = viewTransform * worldTransform  * vec3(inPos, 1);
+    pos.z = 0.5;
     gl_Position = vec4(pos.xyz, 1.0);
 
-    //screenPos = (pos.xy + 1.0) * 0.5;
     screenPos = (pos.xy * 0.5) + 0.5;
     vertCol = inCol;
 }

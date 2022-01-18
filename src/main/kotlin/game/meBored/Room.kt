@@ -7,6 +7,8 @@ import engine.application.rendering.Shader
 import engine.files.FileAccessMode
 import engine.files.FileSystem
 import logging.Log
+import org.lwjgl.opengl.GL11C.*
+import org.lwjgl.opengl.GL13C.GL_CLAMP_TO_BORDER
 import util.GeometryMath.lineIntersection
 import util.Vector2
 import util.Vector3
@@ -111,6 +113,11 @@ class Room(
         shadowBuffer.attachColorBuffer()
         shadowBuffer.attachDepthBuffer()
         shadowBuffer.verify()
+
+        shadowBuffer.bind()
+
+
+        shadowBuffer.unbind()
     }
 
     fun castRays(origin: Vector2) {
@@ -140,23 +147,30 @@ class Room(
     }
 
     fun render(shader: Shader, shadowShader: Shader) {
-        //shadowBuffer.bind()
-        //shadowBuffer.setClearColor(1f, 1f, 1f, 1f)
-        //shadowBuffer.clear(FrameBuffer.ColorBuffer)
+        shadowBuffer.bind()
+        glEnable(GL_DEPTH_TEST)
+        glDepthFunc(GL_LEQUAL)
+
+        shadowBuffer.setClearColor(1f, 1f, 1f, 1f)
+        shadowBuffer.clear(FrameBuffer.ColorBuffer or FrameBuffer.DepthBuffer)
 
         shadowShader.bind()
         shadowShader.setUniform("castLength", 100f)
-        shadowShader.setUniform("col", Vector3(0f, 1f, 0f))
+        shadowShader.setUniform("col", Vector3(0f))
         shadowMesh.render(shadowShader)
 
         shadowShader.setUniform("castLength", 1f)
-        shadowShader.setUniform("col", Vector3(1f, 0f, 0f))
+        shadowShader.setUniform("col", Vector3(1f))
         shadowMesh.render(shadowShader)
 
         shadowBuffer.unbind()
+        glDisable(GL_DEPTH_TEST)
 
-        //GL11C.glBindTexture(GL_TEXTURE_2D, shadowBuffer.colorTexture)
-        //wallMesh.render(shader)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER)
+        glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, floatArrayOf(0f, 0f, 0f, 0f))
+        glBindTexture(GL_TEXTURE_2D, shadowBuffer.colorTexture)
+        wallMesh.render(shader)
         //rayMesh.render(shader)
     }
 }

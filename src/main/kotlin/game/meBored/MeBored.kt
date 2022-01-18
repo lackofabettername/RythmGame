@@ -8,8 +8,6 @@ import engine.application.rendering.Mesh
 import engine.application.rendering.Shader
 import engine.console.ConsoleCommand
 import game.DummyClientLogic
-import org.lwjgl.opengl.GL11C.GL_LEQUAL
-import org.lwjgl.opengl.GL11C.glDepthFunc
 import util.Matrix3x3
 import util.Vector2
 import util.Vector3
@@ -37,9 +35,8 @@ class MeBored(
     override fun onStart(renderInfo: RenderInfo) {
         this.renderInfo = renderInfo
         window = renderInfo.Window
-        window.DepthTest = true
+        window.DepthTest = false
         window.CullFace = false
-        glDepthFunc(GL_LEQUAL)
         //window.Blend = true
         //glBlendFunc(GL_SRC_ALPHA, GL_SRC_COLOR);
 
@@ -92,7 +89,7 @@ class MeBored(
         }
 
         window.setClearColor(0f, 0f, 0f, 1f)
-        window.clear(Window.ColorBuffer or Window.DepthBuffer)
+        window.clear(Window.ColorBuffer)
 
         shader.bind()
         val t = (System.currentTimeMillis() % 6000) * PI.toFloat() * 2 / 6000
