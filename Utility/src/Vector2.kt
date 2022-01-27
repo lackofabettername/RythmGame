@@ -373,6 +373,11 @@ class Vector2(
             cos(angle) * length,
             sin(angle) * length
         )
+
+        fun arrayOf(vararg values: Float) = values.toList()
+            .chunked(2)
+            .map { Vector2(it[0], it.getOrElse(1) { 0f }) }
+            .toTypedArray()
         //endregion
 
         fun toFloatArray(v: Vector2): FloatArray {

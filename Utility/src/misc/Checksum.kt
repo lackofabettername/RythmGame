@@ -1,6 +1,5 @@
 package util.misc
 
-import logging.Log
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
@@ -26,7 +25,7 @@ object Checksum {
                     for (child in f.listFiles())
                         queue.add(child)
                 } else {
-                    Log.trace("Checksum", "$f")
+                    //Log.trace("Checksum", "$f")
 
                     val fis: InputStream = FileInputStream(f)
                     var numRead: Int
