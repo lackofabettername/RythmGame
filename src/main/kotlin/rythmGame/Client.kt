@@ -1,0 +1,4 @@
+package rythmGame
+
+class Client {
+}
