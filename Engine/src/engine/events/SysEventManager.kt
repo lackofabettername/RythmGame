@@ -35,8 +35,8 @@ class SysEventManager(private val _engine: Engine) {
     }
 
     fun captureInputs() {
-        _engine.Window!!.pollEvents()
-        _engine.Window.rerouteInputEvents { input -> enqueueEvent(SysEvent(SysEventType.Input, 0, input)) }
+        _engine.Application!!.pollEvents()
+        _engine.Application.rerouteInputEvents { input -> enqueueEvent(SysEvent(SysEventType.Input, 0, input)) }
     }
 
     fun enqueueEvent(event: SysEvent) {

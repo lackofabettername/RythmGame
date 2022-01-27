@@ -1,6 +1,6 @@
 package misccelaneous
 
-import engine.application.RenderInfo
+import engine.Engine
 import engine.application.RenderLogic
 import engine.application.Window
 import engine.application.events.*
@@ -17,7 +17,8 @@ import kotlin.math.sin
 class DummyRenderLogic(
     val client: DummyClientLogic
 ) : RenderLogic {
-    lateinit var renderInfo: RenderInfo
+    lateinit var engine: Engine
+    lateinit var window: Window
 
     val gui = GUI()
 
@@ -30,10 +31,10 @@ class DummyRenderLogic(
 
     var frameCount = 0
 
-    override fun onStart(renderInfo: RenderInfo) {
-        this.renderInfo = renderInfo
+    override fun initialize(window: Window) {
+        this.window = window
 
-        gui.initialize(renderInfo.Window)
+        gui.initialize(window)
         gui.addWindow(debugGUI(this))
 
         shader = Shader()
@@ -58,16 +59,19 @@ class DummyRenderLogic(
                 Vector3(1f, 0f, 1f),
             )
         )
+    }
 
+    override fun onStart(engine: Engine) {
+        this.engine = engine
     }
 
     override fun onUpdate() {
     }
 
     override fun onRender() {
-        if (renderInfo.Window.IsResized) {
+        if (window.IsResized) {
             shader.bind()
-            val v = (renderInfo.Window.AspectRatio)
+            val v = (window.AspectRatio)
             viewMat.set(
                 1f / 100 / v, 0f, 0f,
                 0f, 1f / 100, 0f,
@@ -79,9 +83,9 @@ class DummyRenderLogic(
         //Log.trace("RenderLogic", "frame #$frameCount")
         ++frameCount
 
-        renderInfo.Window.setClearColor(1f, playerPos.y, 0f, 0f)
-        renderInfo.Window.setClearColor(0.5f, 0.5f, 0.5f, 0f)
-        renderInfo.Window.clear(Window.ColorBuffer)
+        window.setClearColor(1f, playerPos.y, 0f, 0f)
+        window.setClearColor(0.5f, 0.5f, 0.5f, 0f)
+        window.clear(Window.ColorBuffer)
 
         shader.bind()
         val v = sin((System.currentTimeMillis() % 2000) * PI.toFloat() * 2 / 2000) / 2 + 0.5f
@@ -102,7 +106,7 @@ class DummyRenderLogic(
             if ((event as KeyEvent).Type == KeyEventType.Pressed) {
                 when (event.Key) {
                     Key.Escape -> {
-                        renderInfo.enqueueEvent(
+                        engine.Application!!.enqueueEvent(
                             ApplicationEvent(ConsoleCommand("exit", ""))
                         )
                     }
@@ -110,5 +114,4 @@ class DummyRenderLogic(
             }
         }
     }
-
 }

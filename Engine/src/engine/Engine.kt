@@ -37,7 +37,7 @@ class Engine(
 
     //region Main engine modules
     val Console: Console
-    val Window: Application?
+    val Application: Application?
 
     private val _network: NetManager
     private var _server: Server?
@@ -69,11 +69,12 @@ class Engine(
         Console.registerCVarIfAbsent("sys_MaxRenderFPS", 0) // Uncapped
         Console.registerCVarIfAbsent("sys_VSync", false)
 
-        Window = when {
-            renderGameLogic != null -> Application(Console, renderGameLogic)
+        Application = when {
+            renderGameLogic != null -> Application(Console, renderGameLogic, this)
             else -> null
         }
-        Window?.initialize()
+        Application?.initialize()
+
 
         _events.initialize()
 
@@ -90,6 +91,9 @@ class Engine(
         }
         Log.Indent--
         Log.info("Engine", "Initialized Network")
+
+
+        Application?.start()
 
         _isRunning = true
 
@@ -123,7 +127,7 @@ class Engine(
         _server?.shutdown()
         _events.close()
         _network.close()
-        Window?.close()
+        Application?.close()
         Console.close()
         FileSystem.close()
         _isRunning = false
@@ -173,7 +177,7 @@ class Engine(
                             )
                         ) //Does this cause a frame of latency?
                     else
-                        Window?.onInputEvent(event)
+                        Application?.onInputEvent(event)
 
                     // _client.onInputEvent(event.Reference as InputEvent?)
                 }
@@ -218,8 +222,8 @@ class Engine(
                         if (Args.size == 1) {
                             when (Args[0]) {
                                 "Application" -> {
-                                    Window?.close()
-                                    Window?.initialize()
+                                    Application?.close()
+                                    Application?.initialize()
                                 }
                                 else -> {
                                     Log.warn("Unknown keyword, ${Foreground.Blue}Application${Style.Reset} is supported.")
@@ -271,7 +275,7 @@ class Engine(
             // ---------------------
             //  Core systems update
             // ---------------------
-            if (Window != null)
+            if (Application != null)
                 _events.captureInputs() // Flush the input events once per frame...
 
             Console.writeConfiguration() //TODO: only write when CVars are updated?
@@ -327,7 +331,7 @@ class Engine(
             // --------------------
             //  Client-side update
             // --------------------
-            if (!_isServerDedicated && Window != null) {
+            if (!_isServerDedicated && Application != null) {
                 processEventLoop() // Run again to avoid a frame of latency...
                 executeSystemCommands()
 
@@ -338,9 +342,9 @@ class Engine(
                 // - Command the window to send a notification to a shared (with the client) simulation/game object.
                 // - Pass the window to the client and forget about it. Then ask it to render.
                 //TODO: Multi-thread the client updating and rendering? Research required.
-                if (Window.isRunning) {
-                    Window.update()
-                    Window.render()
+                if (Application.isRunning) {
+                    Application.update()
+                    Application.render()
                 } else {
                     _isRunning = false
                 }

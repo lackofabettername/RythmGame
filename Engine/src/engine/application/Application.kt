@@ -1,5 +1,6 @@
 package engine.application
 
+import engine.Engine
 import engine.application.events.*
 import engine.console.Console
 import engine.console.logging.Log
@@ -10,14 +11,12 @@ import java.util.function.Consumer
 //TODO: Variable Canvas size
 class Application(
     private val _console: Console,
-    private val _logic: RenderLogic
+    private val _logic: RenderLogic,
+    private val _engine: Engine
 ) {
 
     private val _inputEventQueue = ArrayBlockingQueue<InputEvent>(QueueCapacity, true)
-    private val _window = Window("Freehand")
-
-    val CanvasW by _window::Width
-    val CanvasH by _window::Height
+    val Window = Window("Freehand")
 
     var isRunning = false
         private set
@@ -37,16 +36,16 @@ class Application(
         val windH = _console.getCVar("app_Height")!!
         val resizable = _console.getCVar("app_Resizable")!!
 
-        _window.initialize(
+        Window.initialize(
             vSync.clean().Flag,
             windW.clean().Value,
             windH.clean().Value,
             resizable.clean().Flag
         )
 
-        vSync.Listeners.add { vSync -> _window.VSync = vSync.clean().Flag }
-        windW.Listeners.add { windW -> _window.Width = windW.clean().Value }
-        windH.Listeners.add { windH -> _window.Height = windH.clean().Value }
+        vSync.Listeners.add { vSync -> Window.VSync = vSync.clean().Flag }
+        windW.Listeners.add { windW -> Window.Width = windW.clean().Value }
+        windH.Listeners.add { windH -> Window.Height = windH.clean().Value }
         resizable.Listeners.add { _ -> Log.warn("Changing window resizability requires restart") }
 
         setCallbacks()
@@ -58,14 +57,22 @@ class Application(
 
         Log.info("Application", "Initializing render logic...")
         Log.Indent++
-        _logic.onStart(RenderInfo(_window, this))
-        isRunning = true
+        _logic.initialize(Window)
         Log.Indent--
         Log.info("Application", "Initialized render logic.")
     }
 
+    fun start() {
+        Log.info("Application", "Starting render logic...")
+        Log.Indent++
+        _logic.onStart(_engine)
+        isRunning = true
+        Log.Indent--
+        Log.info("Application", "Started render logic.")
+    }
+
     private fun setCallbacks() {
-        with(_window) {
+        with(Window) {
             setKeyCallback { window, key, scancode, action, mods ->
                 enqueueEvent(
                     KeyEvent(
@@ -126,7 +133,7 @@ class Application(
     }
 
     fun pollEvents() {
-        _window.pollEvents()
+        Window.pollEvents()
     }
 
     fun update() {
@@ -134,15 +141,15 @@ class Application(
     }
 
     fun render() {
-        if (!_window.ShouldClose) {
-            if (_window.IsResized) {//TODO: Unbind any framebuffers?
-                _window.updateViewport()
+        if (!Window.ShouldClose) {
+            if (Window.IsResized) {//TODO: Unbind any framebuffers?
+                Window.updateViewport()
             }
 
             _logic.onRender()
-            _window.swapBuffers()
+            Window.swapBuffers()
 
-            _window.IsResized = false
+            Window.IsResized = false
         } else {
             close()
         }
@@ -151,7 +158,7 @@ class Application(
     fun close() {
         if (isRunning) {
             _logic.onClose()
-            _window.cleanup()
+            Window.cleanup()
             isRunning = false
         }
     }

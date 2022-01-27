@@ -1,10 +1,13 @@
 package engine.application
 
+import engine.Engine
 import engine.application.events.InputEvent
 
 interface RenderLogic {
 
-    fun onStart(renderInfo: RenderInfo)
+    fun initialize(window: Window)
+
+    fun onStart(engine: Engine)
 
     fun onUpdate()
 

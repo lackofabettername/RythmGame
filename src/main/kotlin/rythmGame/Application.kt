@@ -1,23 +1,23 @@
 package rythmGame
 
-import engine.application.RenderInfo
+import engine.Engine
 import engine.application.RenderLogic
 import engine.application.Window
 import engine.application.events.InputEvent
 import engine.application.rendering.Shader
+import engine.sortMe.Client
 import util.Matrix3x3
 
 class Application : RenderLogic {
     lateinit var window: Window
+    lateinit var client: Client
 
     lateinit var shader: Shader
     val viewMat = Matrix3x3()
 
     lateinit var player: Player
 
-    override fun onStart(renderInfo: RenderInfo) {
-        window = renderInfo.Window
-
+    override fun initialize(window: Window) {
         shader = Shader()
         shader.createVertexShader("Test")
         shader.createFragmentShader("Test")
@@ -26,6 +26,11 @@ class Application : RenderLogic {
         shader.createUniforms("viewTransform", "worldTransform", "lightTexture")
 
         player = Player()
+    }
+
+    override fun onStart(engine: Engine) {
+        window = engine.Application!!.Window
+        
     }
 
     override fun onUpdate() {

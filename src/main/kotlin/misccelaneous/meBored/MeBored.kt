@@ -2,7 +2,7 @@ package misccelaneous.meBored
 
 import Color
 import ColorMode
-import engine.application.RenderInfo
+import engine.Engine
 import engine.application.RenderLogic
 import engine.application.Window
 import engine.application.events.*
@@ -19,7 +19,7 @@ import kotlin.math.sin
 class MeBored(
     val client: DummyClientLogic
 ) : RenderLogic {
-    lateinit var renderInfo: RenderInfo
+    lateinit var engine: Engine
     lateinit var window: Window
 
     val viewMat = Matrix3x3()
@@ -33,9 +33,8 @@ class MeBored(
     val lightPos = Vector2()
 
 
-    override fun onStart(renderInfo: RenderInfo) {
-        this.renderInfo = renderInfo
-        window = renderInfo.Window
+    override fun initialize(window: Window) {
+        this.window = window
         window.DepthTest = false
         window.CullFace = false
         //window.Blend = true
@@ -68,6 +67,10 @@ class MeBored(
         )
 
         room = Room(window)
+    }
+
+    override fun onStart(engine: Engine) {
+        this.engine = engine
     }
 
     override fun onUpdate() {
@@ -118,7 +121,7 @@ class MeBored(
     override fun onInputEvent(event: InputEvent) {
         if (event.EventType == InputEventType.Key) {
             if ((event as KeyEvent).Key == Key.Escape)
-                renderInfo.enqueueEvent(ApplicationEvent(ConsoleCommand("exit", "")))
+                engine.Application!!.enqueueEvent(ApplicationEvent(ConsoleCommand("exit", "")))
             else {
                 //room = Room()
             }

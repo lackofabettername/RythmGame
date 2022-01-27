@@ -7,9 +7,11 @@ import engine.console.logging.LogLevel
 fun main() {
     Log.LogLevel = LogLevel.Debug
 
+    val server = ServerLogic()
+    val client = ClientLogic()
     val application = Application()
 
-    val engine = Engine(null, null, application)
+    val engine = Engine(server, client, application)
 
     engine.run()
 }
