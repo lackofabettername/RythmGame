@@ -11,8 +11,9 @@ import util.Matrix3x3
 import util.Vector
 import util.Vector2
 import util.times
+import java.io.Serializable
 
-class Player {
+class Player : Serializable {
 
     val inputs = HashSet<PlayerInput>()
     val pos = Vector2()
@@ -32,9 +33,13 @@ class Player {
             }
         }
 
-        vel += acc.normalized * 0.06f
+        vel += acc.normalized * 6f
         pos += vel
         vel *= 0.95f
+    }
+
+    override fun toString(): String {
+        return "$pos"
     }
 
     var graphics: Graphics? = null
@@ -63,6 +68,8 @@ class Player {
         val texture = FileSystem.openResource("Player.png", FileAccessMode.Read)!!.use { Texture(it) }
 
         fun render(shader: Shader) {
+            //Log.debug("$pos")
+
             worldMatrix[2, 0] = pos.x
             worldMatrix[2, 1] = pos.y
 
