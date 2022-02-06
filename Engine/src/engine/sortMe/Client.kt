@@ -14,9 +14,9 @@ class Client(
     renderLogic: RenderLogic
 ) {
 
-    fun initialize() {
+    init {
         Log.info("Client", "Initializing...")
-        //_logic.initialize(ClientInfo(this, renderLogic))
+        _logic.initialize(ClientInfo(this, renderLogic))
     }
 
     fun updateFrame(deltaTime: Long) {

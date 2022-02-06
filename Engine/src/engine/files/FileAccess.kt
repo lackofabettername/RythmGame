@@ -5,22 +5,25 @@ import java.io.ObjectOutputStream
 import java.nio.channels.Channels
 import java.nio.channels.FileChannel
 
-class FileAccess(private val _channel: FileChannel, val AccessMode: FileAccessMode) : AutoCloseable {
-    val IsOpen get() = _channel.isOpen
+class FileAccess(
+    val Channel: FileChannel,
+    val AccessMode: FileAccessMode
+) : AutoCloseable {
+    val IsOpen get() = Channel.isOpen
 
     //Stores the flush functions of the different writers that may be initiated
     private val _onClose = ArrayList<() -> Unit>()
 
-    val Reader by lazy { Channels.newReader(_channel, FileSystem.Charset).buffered() }
+    val Reader by lazy { Channels.newReader(Channel, FileSystem.Charset).buffered() }
     val Writer by lazy {
-        val newWriter = Channels.newWriter(_channel, Charsets.UTF_8)
+        val newWriter = Channels.newWriter(Channel, Charsets.UTF_8)
         _onClose += { newWriter.flush() }
         newWriter
     }
 
-    val OIS by lazy { ObjectInputStream(Channels.newInputStream(_channel)) }
+    val OIS by lazy { ObjectInputStream(Channels.newInputStream(Channel)) }
     val OOS by lazy {
-        val oos = ObjectOutputStream(Channels.newOutputStream(_channel))
+        val oos = ObjectOutputStream(Channels.newOutputStream(Channel))
         _onClose += { oos.flush() }
         oos
     }
@@ -28,7 +31,7 @@ class FileAccess(private val _channel: FileChannel, val AccessMode: FileAccessMo
     override fun close() {
         if (!IsOpen) return
         _onClose.forEach { it() }     // Flush all writers that may be active
-        _channel.force(true) // Force the channel to update the file
-        _channel.close()
+        Channel.force(true) // Force the channel to update the file
+        Channel.close()
     }
 }

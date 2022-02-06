@@ -4,18 +4,21 @@ import engine.Engine
 import engine.application.RenderLogic
 import engine.application.Window
 import engine.application.events.InputEvent
+import engine.application.events.Key
+import engine.application.events.KeyEvent
+import engine.application.events.KeyEventType
 import engine.application.rendering.Shader
-import engine.sortMe.Client
 import util.Matrix3x3
 
-class Application : RenderLogic {
+class Application(
+    val client: ClientLogic
+) : RenderLogic {
     lateinit var window: Window
-    lateinit var client: Client
 
     lateinit var shader: Shader
     val viewMat = Matrix3x3()
 
-    lateinit var player: Player
+    lateinit var playerKeyBinds: HashMap<Key, PlayerInput>
 
     override fun initialize(window: Window) {
         shader = Shader()
@@ -23,14 +26,20 @@ class Application : RenderLogic {
         shader.createFragmentShader("Test")
         shader.link()
 
-        shader.createUniforms("viewTransform", "worldTransform", "lightTexture")
+        shader.createUniforms("viewTransform", "worldTransform", "spriteTexture")
 
-        player = Player()
+        playerKeyBinds = hashMapOf(
+            Key.W to PlayerInput.MoveUp,
+            Key.A to PlayerInput.MoveLeft,
+            Key.S to PlayerInput.MoveDown,
+            Key.D to PlayerInput.MoveRight,
+        )
+        client.player.graphics = client.player.Graphics()
     }
 
     override fun onStart(engine: Engine) {
         window = engine.Application!!.Window
-        
+
     }
 
     override fun onUpdate() {
@@ -39,10 +48,9 @@ class Application : RenderLogic {
 
     override fun onRender() {
         if (window.IsResized) {
-            val v = (window.AspectRatio)
             viewMat.set(
-                1f / 100 / v, 0f, 0f,
-                0f, 1f / 100, 0f,
+                1f / window.Height / window.AspectRatio, 0f, 0f,
+                0f, 1f / window.Height, 0f,
                 0f, 0f, 1f,
             )
 
@@ -53,8 +61,7 @@ class Application : RenderLogic {
         window.clear(Window.ColorBuffer)
 
         shader.setUniform("viewTransform", viewMat)
-        shader.setUniform("worldTransform", Matrix3x3.identity())
-        player.mesh.render(shader)
+        client.player.graphics!!.render(shader)
     }
 
     override fun onClose() {
@@ -62,6 +69,10 @@ class Application : RenderLogic {
     }
 
     override fun onInputEvent(event: InputEvent) {
-
+        if (event is KeyEvent) {
+            playerKeyBinds[event.Key]?.let {
+                client.playerInput(it, event.Type != KeyEventType.Released)
+            }
+        }
     }
 }

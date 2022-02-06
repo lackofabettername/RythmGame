@@ -4,6 +4,8 @@ import java.io.Serializable
 import kotlin.math.*
 import kotlin.random.Random
 
+operator fun Array<Vector2>.times(value: Float) = this.map { it * value }.toTypedArray()
+
 @Suppress("unused")
 class Vector2(
     var x: Float = 0f,
@@ -288,7 +290,7 @@ class Vector2(
     //    return if (magnitude > 0) times(mag / magnitude) else this
     //}
 
-    val normalized get() = this.div(magnitude)
+    val normalized get() = if (this.magnitudeSqr != 0f) this.div(magnitude) else this
     fun normalize(): Vector2 {
         if (magnitude > 0)
             divAssign(magnitude)

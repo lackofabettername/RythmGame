@@ -6,7 +6,7 @@ import engine.network.common.NetMessage
 
 class ClientInfo(
     private val _client: Client,
-    val RenderLogic: RenderLogic
+    val RenderLogic: RenderLogic,
 ) {
     fun send(address: NetAddress, message: NetMessage) = _client.sendMessage(address, message)
 }

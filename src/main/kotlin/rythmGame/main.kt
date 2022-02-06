@@ -9,7 +9,7 @@ fun main() {
 
     val server = ServerLogic()
     val client = ClientLogic()
-    val application = Application()
+    val application = Application(client)
 
     val engine = Engine(server, client, application)
 

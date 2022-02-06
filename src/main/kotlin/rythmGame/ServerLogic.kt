@@ -1,5 +1,6 @@
 package rythmGame
 
+import engine.console.logging.Log
 import engine.network.common.NetMessage
 import engine.network.server.ServerClient
 import engine.network.server.ServerGameLogic
@@ -16,5 +17,6 @@ class ServerLogic : ServerGameLogic {
     }
 
     override fun clientMessageReceive(client: ServerClient, message: NetMessage) {
+        Log.debug("ServerLogic", "Received $message from $client")
     }
 }
