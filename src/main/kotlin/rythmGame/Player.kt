@@ -19,7 +19,7 @@ class Player : Serializable {
     val pos = Vector2()
     val vel = Vector2()
 
-    fun update() {
+    fun update(t: Float) {
         val acc = Vector2();
         for (input in inputs) {
             when (input) {
@@ -33,13 +33,16 @@ class Player : Serializable {
             }
         }
 
-        vel += acc.normalized * 6f
+        vel += acc.normalized * 20f * t
+        //if (acc.magnitudeSqr > 0)
+        //    vel.rotateAssign((acc.heading - vel.heading).coerceAtLeast(-0.2f).coerceAtMost(0.2f))
+        //Log.debug("${acc.heading - vel.heading}")
         pos += vel
         vel *= 0.95f
     }
 
     override fun toString(): String {
-        return "$pos"
+        return "$pos, $vel"
     }
 
     var graphics: Graphics? = null
@@ -50,11 +53,11 @@ class Player : Serializable {
             Mesh.StaticDraw,
             intArrayOf(0, 1, 2, 1, 2, 3),
             (Vector2.arrayOf(
-                0f, 0f,
-                1f, 0f,
-                0f, 1f,
+                -1f, -1f,
+                1f, -1f,
+                -1f, 1f,
                 1f, 1f,
-            ) * (128f / 2)) as Array<Vector>,
+            ) * (64f / 2)) as Array<Vector>,
             Vector2.arrayOf(
                 0f, 0f,
                 1f, 0f,
@@ -72,6 +75,14 @@ class Player : Serializable {
 
             worldMatrix[2, 0] = pos.x
             worldMatrix[2, 1] = pos.y
+
+            val sin = -vel.normalized dot Vector2(1f, 0f)
+            val cos = vel.normalized dot Vector2(0f, 1f)
+            worldMatrix[0, 0] = cos
+            worldMatrix[1, 0] = -sin
+            worldMatrix[0, 1] = sin
+            worldMatrix[1, 1] = cos
+            //Log.debug("${vel}, $cos")
 
             shader.bind()
             shader.setUniform("worldTransform", worldMatrix)

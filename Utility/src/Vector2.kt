@@ -266,7 +266,7 @@ class Vector2(
         return this
     }
 
-    fun dot(v: Vector2): Float {
+    infix fun dot(v: Vector2): Float {
         return x * v.x + y * v.y
     }
 
@@ -386,7 +386,7 @@ class Vector2(
             return floatArrayOf(v.x, v.y)
         }
 
-        fun lerp(a: Vector2, b: Vector2, amount: Float): Vector2 {
+        fun lerp(amount: Float, a: Vector2, b: Vector2): Vector2 {
             return Vector2(
                 a.x * (1f - amount) + b.x * amount,
                 a.y * (1f - amount) + b.y * amount,

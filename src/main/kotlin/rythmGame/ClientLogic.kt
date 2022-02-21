@@ -11,7 +11,11 @@ class ClientLogic : ClientGameLogic {
 
     lateinit var client: ClientInfo
 
-    val player = Player()
+    val gsFuture = GameState()
+    val gsPast = GameState()
+    val gsNow = GameState()
+
+    var time = -1L
 
     fun playerInput(input: PlayerInput, activate: Boolean) {
         client.send(
@@ -28,7 +32,9 @@ class ClientLogic : ClientGameLogic {
     }
 
     override fun updateFrame(deltaTime: Long) {
-        player.update()
+        time += deltaTime
+        val t = (time - gsPast.timeStamp).toFloat() / (gsFuture.timeStamp - gsPast.timeStamp) - 1
+        gsNow.lerp(t, gsPast, gsFuture)
     }
 
     override fun close() {
@@ -39,11 +45,15 @@ class ClientLogic : ClientGameLogic {
         Log.debug("ClientLogic", "Received $message")
 
         when (message.Type) {
-            NetMessageType.SV_GameState -> gameStateReceived(message.Data as Player)
+            NetMessageType.SV_GameState -> gameStateReceived(message.Data as GameState)
         }
     }
 
-    fun gameStateReceived(player: Player) {
-        this.player.pos copyFrom player.pos
+    fun gameStateReceived(gameState: GameState) {
+        if (time == -1L) time = gameState.timeStamp
+
+        gsPast copyFrom gsFuture
+        gsFuture copyFrom gameState
+
     }
 }

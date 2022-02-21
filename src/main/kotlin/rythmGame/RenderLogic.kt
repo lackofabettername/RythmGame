@@ -10,7 +10,7 @@ import engine.application.events.KeyEventType
 import engine.application.rendering.Shader
 import util.Matrix3x3
 
-class Application(
+class RenderLogic(
     val client: ClientLogic
 ) : RenderLogic {
     lateinit var window: Window
@@ -34,7 +34,7 @@ class Application(
             Key.S to PlayerInput.MoveDown,
             Key.D to PlayerInput.MoveRight,
         )
-        client.player.graphics = client.player.Graphics()
+        client.gsNow.player.graphics = client.gsNow.player.Graphics()
     }
 
     override fun onStart(engine: Engine) {
@@ -61,7 +61,7 @@ class Application(
         window.clear(Window.ColorBuffer)
 
         shader.setUniform("viewTransform", viewMat)
-        client.player.graphics!!.render(shader)
+        client.gsNow.player.graphics!!.render(shader)
     }
 
     override fun onClose() {

@@ -32,9 +32,7 @@ class Vector3(var x: Float = 0f, var y: Float = 0f, var z: Float = 0f) : Vector 
         return Vector2(y, z)
     }
 
-    fun toFloatArray(): FloatArray {
-        return floatArrayOf(x, y, z)
-    }
+    val floatArray get() = floatArrayOf(x, y, z)
     //endregion
 
     //region Operations
@@ -221,7 +219,7 @@ class Vector3(var x: Float = 0f, var y: Float = 0f, var z: Float = 0f) : Vector 
 
     //region Magnitude
     //optimize: only update when x,y or z component changes?
-    val magnitudeSqr; get() = x * x + y * y + z * z
+    val magnitudeSqr get() = x * x + y * y + z * z
 
     var magnitude
         get() = sqrt((x * x + y * y + z * z).toDouble()).toFloat()

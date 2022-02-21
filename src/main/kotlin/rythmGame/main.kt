@@ -9,9 +9,9 @@ fun main() {
 
     val server = ServerLogic()
     val client = ClientLogic()
-    val application = Application(client)
+    val renderer = RenderLogic(client)
 
-    val engine = Engine(server, client, application)
+    val engine = Engine(server, client, renderer)
 
     engine.run()
 }

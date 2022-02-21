@@ -11,19 +11,21 @@ class ServerLogic : ServerGameLogic {
 
     lateinit var server: ServerInformation
 
-    val player = Player()
+    val gameState = GameState()
 
     override fun initialize(server: ServerInformation) {
         this.server = server
     }
 
     override fun update(updateTimeStep: Int) {
-        player.update()
+        gameState.timeStamp += updateTimeStep
+
+        gameState.player.update(updateTimeStep / 100f)
 
         server.Session.getClient(NetAddress.loopbackClient)?.let { client ->
             server.sendMessage(
                 client,
-                NetMessage(NetMessageType.SV_GameState, player)
+                NetMessage(NetMessageType.SV_GameState, gameState)
             )
         }
 
@@ -43,8 +45,8 @@ class ServerLogic : ServerGameLogic {
     fun clientInput(input: Pair<PlayerInput, Boolean>) {
         val (input, activated) = input
         if (activated)
-            player.inputs += input
+            gameState.player.inputs += input
         else
-            player.inputs -= input
+            gameState.player.inputs -= input
     }
 }
