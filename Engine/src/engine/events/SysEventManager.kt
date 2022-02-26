@@ -1,6 +1,7 @@
 package engine.events
 
 import engine.Engine
+import engine.console.Console
 import engine.console.ConsoleCommand
 import engine.console.logging.Log
 import java.util.concurrent.ArrayBlockingQueue
@@ -23,7 +24,7 @@ class SysEventManager(private val _engine: Engine) {
 
     //region Event capture methods
     fun captureCommands() {
-        _engine.Console.rerouteCommands { command: ConsoleCommand ->
+        Console.rerouteCommands { command: ConsoleCommand ->
             enqueueEvent(
                 SysEvent(SysEventType.ConsoleCommand, 0, command)
             )

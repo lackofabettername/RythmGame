@@ -14,7 +14,9 @@ import java.util.concurrent.ArrayBlockingQueue
 import java.util.function.Consumer
 
 @Suppress("unused")
-class Console() : AutoCloseable {
+object Console : AutoCloseable {
+
+    const val QueueCapacity = 16
 
     private val _commandQueue = ArrayBlockingQueue<ConsoleCommand>(QueueCapacity, true)
     private val _thread = Thread { mainLoop() }
@@ -23,7 +25,7 @@ class Console() : AutoCloseable {
     private var _open = false
     private val _cVars = HashMap<String, CVar>()
 
-    val cVars get() = _cVars.values
+    val CVars get() = _cVars.values
 
     init {
         _thread.start()
@@ -46,38 +48,40 @@ class Console() : AutoCloseable {
 
     //region Register CVar
 
-    fun registerCVar(cVar: CVar) {
+    fun registerCVar(cVar: CVar): CVar {
         if (cVar.Name in _cVars)
             cVar.Listeners.addAll(_cVars[cVar.Name]!!.Listeners)
         _cVars[cVar.Name] = cVar
+        return cVar
     }
 
-    fun registerCVar(name: String, text: String) {
-        registerCVar(CVar(name, text))
+    fun registerCVar(name: String, text: String) = CVar(name, text).also {
+        registerCVar(it)
     }
 
-    fun registerCVar(name: String, value: Int) {
-        registerCVar(CVar(name, value))
+    fun registerCVar(name: String, value: Int) = CVar(name, value).also {
+        registerCVar(it)
     }
 
-    fun registerCVar(name: String, flag: Boolean) {
-        registerCVar(CVar(name, flag))
+    fun registerCVar(name: String, flag: Boolean) = CVar(name, flag).also {
+        registerCVar(it)
     }
 
-    fun registerCVarIfAbsent(cVar: CVar) {
+    fun registerCVarIfAbsent(cVar: CVar): CVar {
         _cVars.putIfAbsent(cVar.Name, cVar)
+        return cVar
     }
 
-    fun registerCVarIfAbsent(name: String, text: String) {
-        registerCVarIfAbsent(CVar(name, text))
+    fun registerCVarIfAbsent(name: String, text: String) = CVar(name, text).also {
+        registerCVarIfAbsent(it)
     }
 
-    fun registerCVarIfAbsent(name: String, value: Int) {
-        registerCVarIfAbsent(CVar(name, value))
+    fun registerCVarIfAbsent(name: String, value: Int) = CVar(name, value).also {
+        registerCVarIfAbsent(it)
     }
 
-    fun registerCVarIfAbsent(name: String, flag: Boolean) {
-        registerCVarIfAbsent(CVar(name, flag))
+    fun registerCVarIfAbsent(name: String, flag: Boolean) = CVar(name, flag).also {
+        registerCVarIfAbsent(it)
     }
 
     //endregion
@@ -202,7 +206,7 @@ class Console() : AutoCloseable {
         //todo: replace use with let and only update the needed parts, instead of clearing everything and rewriting it
         FileSystem["System.CFG"]?.use { out ->
             //Print all CVars in alphabetical order
-            for (cvar in cVars
+            for (cvar in CVars
                 .stream()
                 .sorted(Comparator.comparing { s -> s.Name.lowercase() })
             ) {
@@ -245,9 +249,5 @@ class Console() : AutoCloseable {
                 Log.warn("Console", "Command overflow!")
             }
         }
-    }
-
-    companion object {
-        const val QueueCapacity = 16
     }
 }

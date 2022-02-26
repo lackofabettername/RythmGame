@@ -36,7 +36,6 @@ class Engine(
 ) {
 
     //region Main engine modules
-    val Console: Console
     val Application: Application?
 
     private val _network: NetManager
@@ -63,14 +62,12 @@ class Engine(
         Log.info("Engine", "Initializing subsystems...")
         Log.Indent++
 
-        Console = Console()
-
         Console.loadConfiguration()
         Console.registerCVarIfAbsent("sys_MaxRenderFPS", 0) // Uncapped
         Console.registerCVarIfAbsent("sys_VSync", false)
 
         Application = when {
-            renderGameLogic != null -> Application(Console, renderGameLogic, this)
+            renderGameLogic != null -> Application(renderGameLogic, this)
             else -> null
         }
         Application?.initialize()

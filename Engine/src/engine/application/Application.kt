@@ -10,7 +10,6 @@ import java.util.function.Consumer
 
 //TODO: Variable Canvas size
 class Application(
-    private val _console: Console,
     private val _logic: RenderLogic,
     private val _engine: Engine
 ) {
@@ -27,14 +26,14 @@ class Application(
         Log.info("Application", "Initializing window...")
         Log.Indent++
 
-        _console.registerCVarIfAbsent("app_Width", 900)
-        _console.registerCVarIfAbsent("app_Height", 600)
-        _console.registerCVarIfAbsent("app_Resizable", false)
+        Console.registerCVarIfAbsent("app_Width", 900)
+        Console.registerCVarIfAbsent("app_Height", 600)
+        Console.registerCVarIfAbsent("app_Resizable", false)
 
-        val vSync = _console.getCVar("sys_VSync")!!
-        val windW = _console.getCVar("app_Width")!!
-        val windH = _console.getCVar("app_Height")!!
-        val resizable = _console.getCVar("app_Resizable")!!
+        val vSync = Console.getCVar("sys_VSync")!!
+        val windW = Console.getCVar("app_Width")!!
+        val windH = Console.getCVar("app_Height")!!
+        val resizable = Console.getCVar("app_Resizable")!!
 
         Window.initialize(
             vSync.clean().Flag,
