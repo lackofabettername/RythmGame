@@ -1,4 +1,4 @@
-package misccelaneous
+package rythmGame
 
 import engine.application.Window
 import imgui.ImGui
@@ -6,21 +6,23 @@ import imgui.flag.ImGuiConfigFlags
 import imgui.gl3.ImGuiImplGl3
 import imgui.glfw.ImGuiImplGlfw
 import org.lwjgl.glfw.Callbacks
-import org.lwjgl.glfw.GLFW.*
+import org.lwjgl.glfw.GLFW.glfwGetCurrentContext
+import org.lwjgl.glfw.GLFW.glfwMakeContextCurrent
 
-class GUI(
-    private var _windows: Array<GUIWindow> = arrayOf()
-) {
+class GUI() {
+    val Windows = ArrayList<GUIWindow>()
 
     private lateinit var _parent: Window
     private val _imGuiGlfw = ImGuiImplGlfw()
     private val _imGuiGl3 = ImGuiImplGl3()
 
+    var displayDemo = false
+
     fun initialize(window: Window) {
         _parent = window
         initializeImGUI()
         _imGuiGlfw.init(_parent.Handle, true)
-        _imGuiGl3.init("#version 330")
+        _imGuiGl3.init("#version ${Window.GLMajorVersion}${Window.GLMinorVersion}0")
     }
 
     private fun initializeImGUI() {
@@ -34,18 +36,18 @@ class GUI(
         _imGuiGlfw.dispose()
         ImGui.destroyContext()
         Callbacks.glfwFreeCallbacks(_parent.Handle)
-        glfwDestroyWindow(_parent.Handle)
-        glfwTerminate()
+        //glfwDestroyWindow(_parent.Handle)
+        //glfwTerminate()
     }
 
     fun render() {
         _imGuiGlfw.newFrame()
         ImGui.newFrame()
 
-        for (window in _windows)
+        for (window in Windows)
             window.renderProper()
 
-        ImGui.showDemoWindow()
+        if (displayDemo) ImGui.showDemoWindow()
 
         ImGui.render()
         _imGuiGl3.renderDrawData(ImGui.getDrawData())
@@ -56,10 +58,6 @@ class GUI(
             ImGui.renderPlatformWindowsDefault()
             glfwMakeContextCurrent(backupWindowPtr)
         }
-    }
-
-    fun addWindow(window: GUIWindow) {
-        _windows += window
     }
 }
 

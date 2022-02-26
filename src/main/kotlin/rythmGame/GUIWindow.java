@@ -1,4 +1,4 @@
-package misccelaneous;
+package rythmGame;
 
 import imgui.ImGui;
 

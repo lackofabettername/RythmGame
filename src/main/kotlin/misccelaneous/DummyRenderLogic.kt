@@ -8,6 +8,7 @@ import engine.application.rendering.Mesh
 import engine.application.rendering.Shader
 import engine.console.ConsoleCommand
 import engine.console.logging.Log
+import rythmGame.GUI
 import util.Matrix3x3
 import util.Vector2
 import util.Vector3
@@ -35,7 +36,7 @@ class DummyRenderLogic(
         this.window = window
 
         gui.initialize(window)
-        gui.addWindow(debugGUI(this))
+        gui.Windows += debugGUI(this)
 
         shader = Shader()
         shader.createVertexShader("Test")

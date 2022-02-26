@@ -15,6 +15,8 @@ class RenderLogic(
 ) : RenderLogic {
     lateinit var window: Window
 
+    val gui = GUI()
+
     lateinit var shader: Shader
     val viewMat = Matrix3x3()
 
@@ -27,6 +29,10 @@ class RenderLogic(
         shader.link()
 
         shader.createUniforms("viewTransform", "worldTransform", "spriteTexture")
+
+        gui.initialize(window)
+        //gui.Windows += debugGUI(DummyRenderLogic(DummyClientLogic()))
+        gui.Windows += SettingsGUI(gui)
 
         playerKeyBinds = hashMapOf(
             Key.W to PlayerInput.MoveUp,
@@ -62,6 +68,8 @@ class RenderLogic(
 
         shader.setUniform("viewTransform", viewMat)
         client.gsNow.player.graphics!!.render(shader)
+
+        gui.render()
     }
 
     override fun onClose() {

@@ -199,12 +199,13 @@ class Window(
     }
 
     fun cleanup() {
+        glfwDestroyWindow(Handle)
         glfwTerminate()
     }
 
     companion object {
-        val GLMajorVersion = 3
-        val GLMinorVersion = 3
+        val GLMajorVersion = 4
+        val GLMinorVersion = 6
 
         val ColorBuffer = GL_COLOR_BUFFER_BIT
         val DepthBuffer = GL_DEPTH_BUFFER_BIT

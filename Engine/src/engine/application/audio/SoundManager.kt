@@ -1,7 +1,8 @@
 package engine.application.audio
 
-import org.lwjgl.openal.*
-import org.lwjgl.openal.AL10.*
+import org.lwjgl.openal.AL
+import org.lwjgl.openal.AL10.alDistanceModel
+import org.lwjgl.openal.ALC
 import org.lwjgl.openal.ALC10.*
 import org.lwjgl.system.MemoryUtil
 import java.nio.ByteBuffer
@@ -94,7 +95,7 @@ fun main() {
     manager.addSoundSource("sourceTest", source)
     manager.listener = SoundListener()
 
-    source.setGain(0.4f)
+    source.gain = 0.4f
     source.play()
 
     val end = System.nanoTime() + 60 * 3 * 1_000_000_000L
