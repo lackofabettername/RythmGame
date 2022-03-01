@@ -1,23 +1,32 @@
 package rythmGame
 
 import engine.console.Console
+import engine.console.logging.Log
 import imgui.ImGui.*
+import imgui.flag.ImGuiCol
+import imgui.flag.ImGuiInputTextFlags
 import imgui.type.ImInt
 import imgui.type.ImString
 import java.io.File
+import kotlin.io.path.Path
+import kotlin.io.path.relativeTo
 
 class SettingsGUI(
     val gui: GUI
 ) : GUIWindow("Settings") {
 
-    val musicFolderCVar = Console.registerCVarIfAbsent("Game_MusicFolder", "resources/music")
+    init {
+        Console.registerCVarIfAbsent("Game_MusicFolder", "resources/music")
+    }
+
+    val musicFolderCVar = Console.getCVar("Game_MusicFolder")!!
     val musicFolder = ImString()
 
     var musicPaths: Array<File> = emptyArray()
     val selected = ImInt()
 
     init {
-        musicFolder.set(musicFolderCVar.Text)
+        musicFolder.set(musicFolderCVar.Text.removePrefix("src/main/"))
         musicFolderCVar.Dirty = true
     }
 
@@ -28,18 +37,39 @@ class SettingsGUI(
 
         newLine()
 
-        if (inputText("MusicFolder", musicFolder)) {
-            Console.getCVar("Game_MusicFolder")!!.Text = musicFolder.get()
+        if (musicPaths.isEmpty())
+            pushStyleColor(ImGuiCol.Text, 255f, 0f, 0f, 255f)
+        else
+            pushStyleColor(ImGuiCol.Text, 255f, 255f, 255f, 255f)
+
+        if (inputText("##MusicFolder", musicFolder)) {
+            musicFolderCVar.Text = when {
+                musicFolder.get().matches(Regex("^[A-Z]:")) -> musicFolder.get()
+                musicFolder.get().startsWith("src/main/") -> musicFolder.get()
+                else -> "src/main/${musicFolder.get()}"
+            }
         }
+        popStyleColor()
+
+        sameLine()
+        text("MusicFolder")
 
         if (musicFolderCVar.Dirty) {
             musicFolderCVar.clean()
             val file = File(musicFolderCVar.Text)
-            val files = file.listFiles()
-            if (files.isNotEmpty())
-                musicPaths = files
+
+            musicPaths = emptyArray()
+            if (file.exists()) {
+                val files = file.listFiles { file -> file.extension == "wav" }
+                if (files.isNotEmpty())
+                    musicPaths = files
+            }
         }
 
-        combo("songs", selected, musicPaths.map { it.toString() }.toTypedArray())
+        combo(
+            "songs",
+            selected,
+            musicPaths.map { it.toPath().relativeTo(Path(musicFolderCVar.Text)).toString() }.toTypedArray()
+        )
     }
 }

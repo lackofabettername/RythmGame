@@ -24,6 +24,8 @@ object Console : AutoCloseable {
     @Volatile
     private var _open = false
     private val _cVars = HashMap<String, CVar>()
+    @Volatile
+    var UpdateConfiguration = false
 
     val CVars get() = _cVars.values
 
@@ -199,6 +201,8 @@ object Console : AutoCloseable {
         // - Write out the settings of the engine or game to a file...
         // - Implement methods for saving out game state data?
 
+        if (!UpdateConfiguration) return
+
         if ("System.CFG" !in FileSystem) {
             FileSystem.openFile("System.CFG", FileAccessMode.Write, true)
         }
@@ -213,6 +217,8 @@ object Console : AutoCloseable {
                 out.Writer.write("CVar{${cvar.Name}, ${cvar.Type}, ${cvar.get()}}\n")
             }
         }
+
+        UpdateConfiguration = false
     }
 
 

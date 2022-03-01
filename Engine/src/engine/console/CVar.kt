@@ -36,6 +36,7 @@ class CVar(
                 Listeners.forEach { listener -> listener.accept(this) }
 
             field = value
+            Console.UpdateConfiguration = true
         }
 
     var Clean: Boolean
