@@ -6,7 +6,7 @@ import engine.network.common.NetMessage
 import engine.network.common.NetMessageType
 import imgui.ImGui
 import imgui.type.ImString
-import rythmGame.GUIWindow
+import rythmGame.rendering.GUIWindow
 
 class debugGUI(
     val parent: DummyRenderLogic

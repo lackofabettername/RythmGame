@@ -1,4 +1,4 @@
-package rythmGame
+package rythmGame.simulation
 
 import engine.network.common.NetAddress
 import engine.network.common.NetMessage
@@ -6,6 +6,8 @@ import engine.network.common.NetMessageType
 import engine.network.server.ServerClient
 import engine.network.server.ServerGameLogic
 import engine.network.server.ServerInformation
+import rythmGame.common.GameState
+import rythmGame.common.PlayerInput
 
 class ServerLogic : ServerGameLogic {
 
@@ -18,9 +20,11 @@ class ServerLogic : ServerGameLogic {
     }
 
     override fun update(updateTimeStep: Int) {
-        gameState.timeStamp += updateTimeStep
+        with(gameState) {
+            timeStamp += updateTimeStep
 
-        gameState.player.update(updateTimeStep / 100f)
+            player.update(updateTimeStep / 100f)
+        }
 
         server.Session.getClient(NetAddress.loopbackClient)?.let { client ->
             server.sendMessage(

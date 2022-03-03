@@ -1,4 +1,4 @@
-package rythmGame
+package rythmGame.common
 
 import engine.application.rendering.Mesh
 import engine.application.rendering.Shader

@@ -1,4 +1,4 @@
-package rythmGame
+package rythmGame.rendering
 
 import engine.application.Window
 import imgui.ImGui

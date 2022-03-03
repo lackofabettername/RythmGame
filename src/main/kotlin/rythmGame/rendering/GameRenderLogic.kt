@@ -1,4 +1,4 @@
-package rythmGame
+package rythmGame.rendering
 
 import engine.Engine
 import engine.application.RenderLogic
@@ -8,15 +8,14 @@ import engine.application.events.Key
 import engine.application.events.KeyEvent
 import engine.application.events.KeyEventType
 import engine.application.rendering.Shader
+import rythmGame.simulation.ClientLogic
+import rythmGame.common.PlayerInput
 import util.Matrix3x3
 
-class RenderLogic(
+class GameRenderLogic(
+    val window: Window,
     val client: ClientLogic
 ) : RenderLogic {
-    lateinit var window: Window
-
-    val gui = GUI()
-
     lateinit var shader: Shader
     val viewMat = Matrix3x3()
 
@@ -30,10 +29,6 @@ class RenderLogic(
 
         shader.createUniforms("viewTransform", "worldTransform", "spriteTexture")
 
-        gui.initialize(window)
-        //gui.Windows += debugGUI(DummyRenderLogic(DummyClientLogic()))
-        gui.Windows += SettingsGUI(gui)
-
         playerKeyBinds = hashMapOf(
             Key.W to PlayerInput.MoveUp,
             Key.A to PlayerInput.MoveLeft,
@@ -44,7 +39,6 @@ class RenderLogic(
     }
 
     override fun onStart(engine: Engine) {
-        window = engine.Application!!.Window
 
     }
 
@@ -53,23 +47,26 @@ class RenderLogic(
     }
 
     override fun onRender() {
-        if (window.IsResized) {
-            viewMat.set(
-                1f / window.Height / window.AspectRatio, 0f, 0f,
-                0f, 1f / window.Height, 0f,
-                0f, 0f, 1f,
-            )
+        if (window.IsResized)
+            updateViewMatrix()
 
-            shader.bind()
-            shader.setUniform("viewTransform", viewMat)
-        }
 
+        window.setClearColor(.05f, .05f, .05f, 1f)
         window.clear(Window.ColorBuffer)
 
         shader.setUniform("viewTransform", viewMat)
         client.gsNow.player.graphics!!.render(shader)
+    }
 
-        gui.render()
+    private fun updateViewMatrix() {
+        viewMat.set(
+            1f / window.Height / window.AspectRatio, 0f, 0f,
+            0f, 1f / window.Height, 0f,
+            0f, 0f, 1f,
+        )
+
+        shader.bind()
+        shader.setUniform("viewTransform", viewMat)
     }
 
     override fun onClose() {

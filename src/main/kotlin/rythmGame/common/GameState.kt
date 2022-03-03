@@ -1,8 +1,8 @@
-package rythmGame
+package rythmGame.common
 
 import util.Vector2
 
-class GameState : java.io.Serializable {
+class GameState : engine.simulation.GameState {
     var timeStamp = 0L
     val player = Player()
 

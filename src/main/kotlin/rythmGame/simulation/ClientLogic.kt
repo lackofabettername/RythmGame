@@ -1,4 +1,4 @@
-package rythmGame
+package rythmGame.simulation
 
 import engine.console.logging.Log
 import engine.network.common.NetAddress
@@ -6,6 +6,8 @@ import engine.network.common.NetMessage
 import engine.network.common.NetMessageType
 import engine.sortMe.ClientGameLogic
 import engine.sortMe.ClientInfo
+import rythmGame.common.GameState
+import rythmGame.common.PlayerInput
 
 class ClientLogic : ClientGameLogic {
 

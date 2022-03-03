@@ -8,7 +8,7 @@ import engine.application.rendering.Mesh
 import engine.application.rendering.Shader
 import engine.console.ConsoleCommand
 import engine.console.logging.Log
-import rythmGame.GUI
+import rythmGame.rendering.GUI
 import util.Matrix3x3
 import util.Vector2
 import util.Vector3

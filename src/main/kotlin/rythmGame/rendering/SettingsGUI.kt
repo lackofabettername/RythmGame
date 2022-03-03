@@ -1,10 +1,8 @@
-package rythmGame
+package rythmGame.rendering
 
 import engine.console.Console
-import engine.console.logging.Log
 import imgui.ImGui.*
 import imgui.flag.ImGuiCol
-import imgui.flag.ImGuiInputTextFlags
 import imgui.type.ImInt
 import imgui.type.ImString
 import java.io.File
@@ -12,7 +10,8 @@ import kotlin.io.path.Path
 import kotlin.io.path.relativeTo
 
 class SettingsGUI(
-    val gui: GUI
+    val gui: GUI,
+    val parent: MainRenderLogic
 ) : GUIWindow("Settings") {
 
     init {
@@ -28,6 +27,8 @@ class SettingsGUI(
     init {
         musicFolder.set(musicFolderCVar.Text.removePrefix("src/main/"))
         musicFolderCVar.Dirty = true
+
+        styleColorsClassic()
     }
 
     override fun render() {
@@ -37,6 +38,28 @@ class SettingsGUI(
 
         newLine()
 
+        if (treeNode("Music")) {
+            musicSelection()
+
+            treePop()
+        }
+
+        if (treeNode("Server")) {
+
+            treePop()
+        }
+
+        if (treeNode("Client")) {
+
+            treePop()
+        }
+
+        if (button("Start Game!")) {
+            parent.engine.Application!!.Logic = parent.gameRenderer
+        }
+    }
+
+    fun musicSelection() {
         if (musicPaths.isEmpty())
             pushStyleColor(ImGuiCol.Text, 255f, 0f, 0f, 255f)
         else
