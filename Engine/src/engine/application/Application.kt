@@ -10,9 +10,29 @@ import java.util.function.Consumer
 
 //TODO: Variable Canvas size
 class Application(
-    private val _logic: RenderLogic,
+    logic: RenderLogic,
     private val _engine: Engine
 ) {
+
+    //TODO:
+    // - Change to explicit setter for disambiguation?
+    // - split into two methods?
+    //   - initRenderLogic(), to only init the Renderlogic but not use it
+    //   - startRenderLogic(), to start using an initialized RenderLogic
+    var Logic = logic
+    set(value) {
+        Log.info("Application", "Initializing render logic...")
+        Log.Indent++
+        value.initialize(Window)
+        Log.Indent--
+        Log.info("Application", "Initialized render logic.")
+
+        if (isRunning) {
+            start() //TODO: Refactor this?
+        }
+
+        field = value
+    }
 
     private val _inputEventQueue = ArrayBlockingQueue<InputEvent>(QueueCapacity, true)
     val Window = Window("Freehand")
@@ -54,17 +74,14 @@ class Application(
         Log.Indent--
         Log.info("Application", "Initialized window.")
 
-        Log.info("Application", "Initializing render logic...")
-        Log.Indent++
-        _logic.initialize(Window)
-        Log.Indent--
-        Log.info("Application", "Initialized render logic.")
+        //Trigger update
+        Logic = Logic
     }
 
     fun start() {
         Log.info("Application", "Starting render logic...")
         Log.Indent++
-        _logic.onStart(_engine)
+        Logic.onStart(_engine)
         isRunning = true
         Log.Indent--
         Log.info("Application", "Started render logic.")
@@ -136,7 +153,7 @@ class Application(
     }
 
     fun update() {
-        _logic.onUpdate()
+        Logic.onUpdate()
     }
 
     fun render() {
@@ -145,7 +162,7 @@ class Application(
                 Window.updateViewport()
             }
 
-            _logic.onRender()
+            Logic.onRender()
             Window.swapBuffers()
 
             Window.IsResized = false
@@ -156,7 +173,7 @@ class Application(
 
     fun close() {
         if (isRunning) {
-            _logic.onClose()
+            Logic.onClose()
             Window.cleanup()
             isRunning = false
         }
@@ -180,7 +197,7 @@ class Application(
     }
 
     fun onInputEvent(event: InputEvent) {
-        _logic.onInputEvent(event)
+        Logic.onInputEvent(event)
     }
     //endregion
 
