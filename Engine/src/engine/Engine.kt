@@ -19,8 +19,8 @@ import engine.network.common.NetManager
 import engine.network.common.NetPacket
 import engine.network.server.Server
 import engine.network.server.ServerGameLogic
-import engine.sortMe.Client
-import engine.sortMe.ClientGameLogic
+import engine.network.client.Client
+import engine.network.client.ClientGameLogic
 import util.misc.Checksum
 import util.misc.toHexString
 import java.io.File

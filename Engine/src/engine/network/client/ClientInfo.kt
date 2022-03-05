@@ -1,4 +1,4 @@
-package engine.sortMe
+package engine.network.client
 
 import engine.application.RenderLogic
 import engine.network.common.NetAddress
@@ -8,5 +8,13 @@ class ClientInfo(
     private val _client: Client,
     val RenderLogic: RenderLogic,
 ) {
+    val State: ClientState
+        get() = _client.State
+
     fun send(address: NetAddress, message: NetMessage) = _client.sendMessage(address, message)
+
+    /** Sends message to server */
+    fun send(message: NetMessage) = _client.sendMessage(message)
+
+    fun connect(address: NetAddress) = _client.connect(address)
 }

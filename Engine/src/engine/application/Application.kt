@@ -27,11 +27,11 @@ class Application(
         Log.Indent--
         Log.info("Application", "Initialized render logic.")
 
+        field = value
+
         if (isRunning) {
             start() //TODO: Refactor this?
         }
-
-        field = value
     }
 
     private val _inputEventQueue = ArrayBlockingQueue<InputEvent>(QueueCapacity, true)

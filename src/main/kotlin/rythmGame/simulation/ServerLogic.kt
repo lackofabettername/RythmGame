@@ -35,22 +35,32 @@ class ServerLogic : ServerGameLogic {
 
     }
 
-    override fun shutdown() {
-    }
-
     @Suppress("UNCHECKED_CAST")
     override fun clientMessageReceive(client: ServerClient, message: NetMessage) {
         when (message.Type) {
-            NetMessageType.CL_UserCommand -> clientInput(message.Data as Pair<PlayerInput, Boolean>)
+            NetMessageType.CL_UserCommand -> clientInput(message.Data as ClientCommand)
         }
         //Log.debug("ServerLogic", "Received $message from $client")
     }
 
-    fun clientInput(input: Pair<PlayerInput, Boolean>) {
-        val (input, activated) = input
-        if (activated)
-            gameState.player.inputs += input
-        else
-            gameState.player.inputs -= input
+    override fun clientConnect(client: ServerClient, message: NetMessage): Boolean {
+        //todo
+        return true //Accept all clients
+    }
+
+    override fun shutdown() {
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    fun clientInput(input: ClientCommand) {
+        when (input.type) {
+            ClientCommand.Type.PlayerMovement -> {
+                val (input, activated) = input.data as Pair<PlayerInput, Boolean>
+                if (activated)
+                    gameState.player.inputs += input
+                else
+                    gameState.player.inputs -= input
+            }
+        }
     }
 }

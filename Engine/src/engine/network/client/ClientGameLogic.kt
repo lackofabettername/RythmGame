@@ -1,4 +1,4 @@
-package engine.sortMe
+package engine.network.client
 
 import engine.network.common.NetMessage
 

@@ -1,12 +1,9 @@
 package engine.network.server
 
 import engine.console.logging.Log
-import engine.network.common.NetAddress
-import engine.network.common.NetManager
-import engine.network.common.NetMessage
+import engine.network.common.*
 import engine.network.common.NetMessageType.CL_CommandString
 import engine.network.common.NetMessageType.CL_UserCommand
-import engine.network.common.NetPacket
 
 class Server(
     private val _network: NetManager,
@@ -58,9 +55,6 @@ class Server(
     fun onNetPacketReceived(packet: NetPacket) {
         Log.trace("Server", "Handling packet $packet")
 
-        if (_session.getClient(packet.SenderAddress) == null)
-            _session.addClient(packet.SenderAddress, ServerClient(packet.SenderAddress, this._address))
-
         // Find which client the message is from
         val client = _session.getClient(packet.SenderAddress)
         if (client != null) {
@@ -78,16 +72,30 @@ class Server(
     private fun onNetPacketReceivedOOB(packet: NetPacket) {
         val message = packet.Message
         when (message.Type) {
-            CL_CommandString -> {
-                val commandText = packet.Message.Data as String
+            CL_CommandString -> {//New client
+                val client = ServerClient(packet.SenderAddress, this._address)
+
+                if (!_logic.clientConnect(client, packet.Message))
+                    return //Client rejected.
+
+                //Add client and send confirmation
+                _session.addClient(packet.SenderAddress, client)
+                sendMessage(
+                    client,
+                    NetMessage(
+                        NetMessageType.SV_CommandString,
+                        "Confirmed"
+                    )
+                )
             }
+
             CL_UserCommand -> TODO()
         }
     }
     //endregion
 
     internal fun sendMessage(client: ServerClient, message: NetMessage) {
-        val packet = client.Channel.send(message)
+        val packet = client.Channel.getPacket(message)
         _network.sendPacket(packet)
     }
 }

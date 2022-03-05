@@ -2,8 +2,8 @@ package misccelaneous
 
 import engine.console.logging.Log
 import engine.network.common.NetMessage
-import engine.sortMe.ClientGameLogic
-import engine.sortMe.ClientInfo
+import engine.network.client.ClientGameLogic
+import engine.network.client.ClientInfo
 import util.Vector2
 
 class DummyClientLogic : ClientGameLogic {

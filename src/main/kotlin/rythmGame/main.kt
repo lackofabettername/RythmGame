@@ -8,7 +8,7 @@ import rythmGame.rendering.MainRenderLogic
 import rythmGame.simulation.ServerLogic
 
 fun main() {
-    Log.LogLevel = LogLevel.Debug
+    Log.LogLevel = LogLevel.Trace
 
     val server = ServerLogic()
     val client = ClientLogic()

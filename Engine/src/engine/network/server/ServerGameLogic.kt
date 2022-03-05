@@ -8,8 +8,10 @@ interface ServerGameLogic {
 
     fun update(updateTimeStep: Int)
 
-    fun shutdown()
-
     fun clientMessageReceive(client: ServerClient, message: NetMessage)
+
+    fun clientConnect(client: ServerClient, message: NetMessage): Boolean
+
+    fun shutdown()
 
 }

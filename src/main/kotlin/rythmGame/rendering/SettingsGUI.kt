@@ -1,10 +1,15 @@
 package rythmGame.rendering
 
 import engine.console.Console
+import engine.console.logging.Log
+import engine.network.common.NetAddress
+import engine.network.common.NetMessage
+import engine.network.common.NetMessageType
 import imgui.ImGui.*
 import imgui.flag.ImGuiCol
 import imgui.type.ImInt
 import imgui.type.ImString
+import rythmGame.simulation.ClientCommand
 import java.io.File
 import kotlin.io.path.Path
 import kotlin.io.path.relativeTo
@@ -60,6 +65,7 @@ class SettingsGUI(
     }
 
     fun musicSelection() {
+        //region MusicPath
         if (musicPaths.isEmpty())
             pushStyleColor(ImGuiCol.Text, 255f, 0f, 0f, 255f)
         else
@@ -76,7 +82,9 @@ class SettingsGUI(
 
         sameLine()
         text("MusicFolder")
+        //endregion
 
+        //region Song alternatives
         if (musicFolderCVar.Dirty) {
             musicFolderCVar.clean()
             val file = File(musicFolderCVar.Text)
@@ -89,10 +97,23 @@ class SettingsGUI(
             }
         }
 
-        combo(
-            "songs",
-            selected,
-            musicPaths.map { it.toPath().relativeTo(Path(musicFolderCVar.Text)).toString() }.toTypedArray()
-        )
+        if (combo(
+                "songs",
+                selected,
+                musicPaths.map { it.toPath().relativeTo(Path(musicFolderCVar.Text)).toString() }.toTypedArray()
+            )
+        ) {
+            parent.client.client.send(
+                NetMessage(
+                    NetMessageType.CL_UserCommand,
+                    ClientCommand(
+                        ClientCommand.Type.SongSelection,
+                        musicPaths[selected.get()]
+                    )
+                )
+            )
+            Log.debug("Settings", "Selected ${musicPaths[selected.get()]} (${selected.get()})")
+        }
+        //endregion
     }
 }

@@ -30,14 +30,14 @@ class Texture(file: FileAccess) {
         file.Channel.read(raw)
         raw.flip()
 
-        Log.trace("Texture", raw.contentToString())
+        //Log.trace("Texture", raw.contentToString())
 
         val data = stbi_load_from_memory(raw, width, height, comp, 4)
         if (data == null)
             Log.error(stbi_failure_reason().toString())
         else {
-            Log.trace("Texture", "$data")
-            Log.trace("Texture", data.contentToString())
+            //Log.trace("Texture", "$data")
+            //Log.trace("Texture", data.contentToString())
             Log.trace("Texture", "${width[0]}, ${height[0]}, ${comp[0]}")
         }
 

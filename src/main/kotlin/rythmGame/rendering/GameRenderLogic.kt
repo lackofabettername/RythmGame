@@ -8,6 +8,9 @@ import engine.application.events.Key
 import engine.application.events.KeyEvent
 import engine.application.events.KeyEventType
 import engine.application.rendering.Shader
+import engine.console.logging.Log
+import engine.network.client.ClientState
+import engine.network.common.NetAddress
 import rythmGame.simulation.ClientLogic
 import rythmGame.common.PlayerInput
 import util.Matrix3x3
@@ -39,7 +42,11 @@ class GameRenderLogic(
     }
 
     override fun onStart(engine: Engine) {
-
+        Log.debug("Client", "Connecting to server")
+        do {
+            client.client.connect(NetAddress.loopbackServer)
+            Thread.sleep(100)
+        } while (client.client.State != ClientState.Connected && client.client.State != ClientState.Active)
     }
 
     override fun onUpdate() {

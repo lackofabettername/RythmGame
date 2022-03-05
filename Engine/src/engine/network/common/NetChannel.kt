@@ -13,7 +13,7 @@ class NetChannel( //TODO
         return true
     }
 
-    fun send(message: NetMessage): NetPacket {
+    fun getPacket(message: NetMessage): NetPacket {
         return NetPacket(TargetAddress, SenderAddress, message, _outgoingSeq++, false)
     }
 }
