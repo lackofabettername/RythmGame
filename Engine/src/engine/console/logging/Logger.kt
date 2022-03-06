@@ -8,13 +8,14 @@ class Logger {
     val output = try {
         PrintWriter(BufferedOutputStream(FileOutputStream("Output.log")))
     } catch (e: FileNotFoundException) {
+        System.err.println("Could not open Log file")
         PrintWriter(OutputStream.nullOutputStream())
     }
 
     private val _firstLogTime = System.currentTimeMillis()
     private val _builder = StringBuilder(256)
 
-    val CategoryStyles = HashMap<String, MutableList<Style>>()
+    val CategoryStyles = HashMap<String, List<Style>>()
 
     var IncludeTrace = false
     private val _traces = HashMap<List<StackTraceElement>, Int>()
@@ -22,84 +23,87 @@ class Logger {
     var Indent = 0
 
     fun log(level: LogLevel, category: String?, message: String, ex: Throwable?, vararg styles: Style) {
-        //region Clear _builder
-        _builder.setLength(0)
-        //endregion
+        with(_builder) {
 
-        //region Indent
-        val indent = "\t".repeat(Indent)
-        _builder.append(indent)
-        //endregion
+            //region Clear _builder
+            setLength(0)
+            //endregion
 
-        //region Time
-        val time: Long = System.currentTimeMillis() - _firstLogTime
-        val minutes = TimeUnit.MILLISECONDS.toMinutes(time) % 60
-        val seconds = TimeUnit.MILLISECONDS.toSeconds(time) % 60
-        //val millis = (TimeUnit.MILLISECONDS.toMillis(time) % 1000) / 10
+            //region Indent
+            val indent = "\t".repeat(Indent)
+            append(indent)
+            //endregion
 
-        if (minutes <= 9) _builder.append('0')
-        _builder.append("$minutes:")
+            //region Time
+            val time: Long = System.currentTimeMillis() - _firstLogTime
+            val minutes = TimeUnit.MILLISECONDS.toMinutes(time) % 60
+            val seconds = TimeUnit.MILLISECONDS.toSeconds(time) % 60
+            //val millis = (TimeUnit.MILLISECONDS.toMillis(time) % 1000) / 10
 
-        if (seconds <= 9) _builder.append('0')
-        _builder.append("$seconds ")
+            if (minutes <= 9) append('0')
+            append("$minutes:")
 
-        //if (millis <= 9) builder.append('0')
-        //builder.append("$millis ")
-        //endregion
+            if (seconds <= 9) append('0')
+            append("$seconds ")
 
-        if (IncludeTrace) {
-            var trace = Thread.currentThread().stackTrace.asList()
-            trace = trace.subList(3, trace.size)
-            _traces.putIfAbsent(trace, _traces.size)
-            _builder.append(String.format("%03X ", _traces[trace]))
-        }
+            //if (millis <= 9) builder.append('0')
+            //builder.append("$millis ")
+            //endregion
 
-        //region Level
-        _builder.append("${level.name}:   ", 0, 7)
-        //endregion
-
-        //region Category
-        if (category != null) {
-            _builder.append("[$category] ")
-        }
-        //endregion
-
-        //region Style
-        val defaultStyle = StringBuilder()
-        for (style in styles) {
-            defaultStyle.append(style)
-        }
-        _builder.append(defaultStyle)
-
-        if (category in CategoryStyles) {
-            for (style in CategoryStyles[category]!!) {
-                _builder.append(style)
+            if (IncludeTrace) {
+                var trace = Thread.currentThread().stackTrace.asList()
+                trace = trace.subList(3, trace.size)
+                _traces.putIfAbsent(trace, _traces.size)
+                append(String.format("%03X ", _traces[trace]))
             }
+
+            //region Level
+            append("${level.name}:   ", 0, 7)
+            //endregion
+
+            //region Category
+            if (category != null) {
+                for (style in CategoryStyles[category].orEmpty())
+                    append(style)
+
+                append("[$category] ")
+
+                append(Style.Clear)
+            }
+            //endregion
+
+            //region Style
+            val defaultStyle = StringBuilder()
+            for (style in styles) {
+                defaultStyle.append(style)
+            }
+            append(defaultStyle)
+            //endregion
+
+            //region Message
+            append(
+                message
+                    .replace(Style.Reset.toString(), defaultStyle.toString())
+                    .prependIndent(indent) // Give multiline messages the same indent
+                    .drop(Indent)          // Don't indent first line
+            )
+            //endregion
+
+            //region Exception
+            if (ex != null) {
+                append("\n")
+                append(ex.stackTraceToString().prependIndent(indent))
+            }
+            //endregion
+
+            //region Out
+            append(Style.Clear) // Don't leak any styles to the next line
+
+            println(_builder)       // Print to console
+            output.println(_builder)// Print to log
+            output.flush()
+            //endregion
         }
-        //endregion
-
-        //region Message
-        _builder.append(
-            message
-                .replace(Style.Reset.toString(), defaultStyle.toString())
-                .prependIndent(indent)
-                .drop(Indent) //Don't indent first line
-        )
-        //endregion
-
-        //region Exception
-        if (ex != null) {
-            _builder.append("\n")
-            _builder.append(ex.stackTraceToString().prependIndent(indent))
-        }
-        //endregion
-
-        //region Out
-        _builder.append(Style.Clear)
-        println(_builder)
-        output.println(_builder)
-        output.flush()
-        //endregion
     }
 
     fun close() {

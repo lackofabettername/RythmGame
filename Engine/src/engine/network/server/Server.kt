@@ -73,10 +73,14 @@ class Server(
         val message = packet.Message
         when (message.Type) {
             CL_CommandString -> {//New client
+                Log.trace("Server", "Client connecting...")
                 val client = ServerClient(packet.SenderAddress, this._address)
 
-                if (!_logic.clientConnect(client, packet.Message))
+                if (!_logic.clientConnect(client, packet.Message)) {
+                    Log.trace("Server", "Client rejected!")
                     return //Client rejected.
+                }
+                Log.trace("Server", "Client accepted.")
 
                 //Add client and send confirmation
                 _session.addClient(packet.SenderAddress, client)

@@ -14,13 +14,13 @@ import engine.events.SysEvent
 import engine.events.SysEventManager
 import engine.events.SysEventType
 import engine.files.FileSystem
+import engine.network.client.Client
+import engine.network.client.ClientGameLogic
 import engine.network.common.NetAddressable
 import engine.network.common.NetManager
 import engine.network.common.NetPacket
 import engine.network.server.Server
 import engine.network.server.ServerGameLogic
-import engine.network.client.Client
-import engine.network.client.ClientGameLogic
 import util.misc.Checksum
 import util.misc.toHexString
 import java.io.File
@@ -120,14 +120,27 @@ class Engine(
 
         Log.info("Engine", "Shutting down...")
         Log.Indent++
+
+        Log.info("Engine", "Closing network...")
+        Log.Indent++
         _client?.shutdown()
         _server?.shutdown()
-        _events.close()
         _network.close()
+        Log.Indent--
+        Log.info("Engine", "Network closed.")
+
+        _events.close()
+
+        Log.info("Engine", "Closing window...")
+        Log.Indent++
         Application?.close()
+        Log.Indent--
+        Log.info("Engine", "Window closed.")
+
         Console.close()
         FileSystem.close()
         _isRunning = false
+
         Log.Indent--
         Log.info("Engine", "Shutdown complete.")
 

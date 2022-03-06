@@ -12,6 +12,7 @@ import java.io.IOException
 import java.util.*
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.function.Consumer
+import kotlin.concurrent.thread
 
 @Suppress("unused")
 object Console : AutoCloseable {
@@ -19,19 +20,21 @@ object Console : AutoCloseable {
     const val QueueCapacity = 16
 
     private val _commandQueue = ArrayBlockingQueue<ConsoleCommand>(QueueCapacity, true)
-    private val _thread = Thread { mainLoop() }
+    private val _thread = thread(
+        true,
+        false,
+        null,
+        "Console listener"
+    ) { mainLoop() }
 
     @Volatile
     private var _open = false
     private val _cVars = HashMap<String, CVar>()
+
     @Volatile
     var UpdateConfiguration = false
 
     val CVars get() = _cVars.values
-
-    init {
-        _thread.start()
-    }
 
     fun rerouteCommands(callback: Consumer<ConsoleCommand>) {
         while (!_commandQueue.isEmpty())

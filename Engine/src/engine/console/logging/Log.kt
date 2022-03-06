@@ -46,19 +46,15 @@ object Log {
     }
 
     fun styleCategory(category: String, vararg styles: Style) {
-        if (category !in _logger.CategoryStyles)
-            _logger.CategoryStyles[category] = ArrayList()
-        _logger.CategoryStyles[category]!! += styles
+        _logger.CategoryStyles.compute(category) { category, list -> list?.plus(styles) ?: styles.toList() }
     }
 
     fun unstyleCategory(category: String, vararg styles: Style) {
-        if (category !in _logger.CategoryStyles)
-            _logger.CategoryStyles[category]!! -= styles
+        _logger.CategoryStyles.compute(category) { category, list -> list?.minus(styles.toSet()) ?: styles.toList() }
     }
 
-    fun clearCategoryStyle(category: String?) {
-        if (_logger.CategoryStyles.containsKey(category))
-            _logger.CategoryStyles.get(category)!!.clear()
+    fun clearCategoryStyle(category: String) {
+        _logger.CategoryStyles[category] = ArrayList()
     }
 
     /**
