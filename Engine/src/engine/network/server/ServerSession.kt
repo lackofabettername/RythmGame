@@ -8,6 +8,7 @@ class ServerSession {
     //public NetChallenge[] Challenges;
 
     private val _connected = HashMap<NetAddress, ServerClient>()
+    val Clients get() = _connected.values
 
     fun getClient(address: NetAddress): ServerClient? {
         return _connected[address]

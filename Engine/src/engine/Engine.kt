@@ -28,6 +28,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 import java.util.concurrent.ArrayBlockingQueue
+import kotlin.system.exitProcess
 
 class Engine(
     serverGameLogic: ServerGameLogic? = null,
@@ -36,7 +37,7 @@ class Engine(
 ) {
 
     //region Main engine modules
-    val Application: Application?
+    internal val application: Application?
 
     private val _network: NetManager
     private var _server: Server?
@@ -66,31 +67,20 @@ class Engine(
         Console.registerCVarIfAbsent("sys_MaxRenderFPS", 0) // Uncapped
         Console.registerCVarIfAbsent("sys_VSync", false)
 
-        Application = when {
-            renderGameLogic != null -> Application(renderGameLogic, this)
-            else -> null
-        }
-        Application?.initialize()
-
+        application = renderGameLogic?.let { Application(it, this) }
+        application?.initialize()
 
         _events.initialize()
 
         Log.info("Engine", "Initializing Network...")
         Log.Indent++
         _network = NetManager()
-        _server = when {
-            serverGameLogic != null -> Server(_network, serverGameLogic)
-            else -> null
-        }
-        _client = when {
-            clientGameLogic != null -> Client(_network, clientGameLogic, renderGameLogic!!)
-            else -> null
-        }
+        _server = serverGameLogic?.let { Server(_network, it) }
+        _client = clientGameLogic?.let { Client(_network, it, renderGameLogic!!) }
         Log.Indent--
         Log.info("Engine", "Initialized Network")
 
-
-        Application?.start()
+        application?.start()
 
         _isRunning = true
 
@@ -98,9 +88,45 @@ class Engine(
         Log.info("Engine", "Initialization complete.")
     }
 
+    //region Engine hooks
+    val Window get() = application?.Window
+
+    var RenderLogic by application!!::Logic
+    var ServerLogic
+        get() = _server?.Logic
+        set(logic) {
+            _server = if (_server == null) {
+                if (logic == null) return //No difference
+
+                Server(_network, logic)
+            } else {
+                _server!!.shutdown()
+
+                if (logic == null) null
+                else Server(_network, logic)
+            }
+        }
+    var ClientLogic
+        get() = _client?.Logic
+        set(logic) {
+            _client = if (_client == null) {
+                if (logic == null) return //No difference
+
+                Client(_network, logic, RenderLogic)
+            } else {
+                _server!!.shutdown()
+
+                if (logic == null) null
+                else Client(_network, logic, RenderLogic)
+            }
+        }
+    //endregion
+
     fun run() {
+        var exitedSuccessfully = false
         try {
             mainLoop()
+            exitedSuccessfully = true
         } catch (e: Throwable) {
             try {
                 Log.Indent = 0
@@ -111,11 +137,11 @@ class Engine(
             }
         } finally {
             //TODO: Don't call this if the "exit" console command was triggered.
-            shutdown()
+            shutdown(exitedSuccessfully)
         }
     }
 
-    private fun shutdown() {
+    private fun shutdown(exitedSuccessfully: Boolean) {
         Log.Indent = 0
 
         Log.info("Engine", "Shutting down...")
@@ -133,7 +159,7 @@ class Engine(
 
         Log.info("Engine", "Closing window...")
         Log.Indent++
-        Application?.close()
+        application?.close()
         Log.Indent--
         Log.info("Engine", "Window closed.")
 
@@ -146,6 +172,8 @@ class Engine(
 
         Log.info("Log", "Closing log file...")
         Log.close()
+
+        exitProcess(if (exitedSuccessfully) 0 else 1)
     }
 
     private fun processEventLoop(): Long {
@@ -187,7 +215,7 @@ class Engine(
                             )
                         ) //Does this cause a frame of latency?
                     else
-                        Application?.onInputEvent(event)
+                        application?.onInputEvent(event)
 
                     // _client.onInputEvent(event.Reference as InputEvent?)
                 }
@@ -232,8 +260,8 @@ class Engine(
                         if (Args.size == 1) {
                             when (Args[0]) {
                                 "Application" -> {
-                                    Application?.close()
-                                    Application?.initialize()
+                                    application?.close()
+                                    application?.initialize()
                                 }
                                 else -> {
                                     Log.warn("Unknown keyword, ${Foreground.Blue}Application${Style.Reset} is supported.")
@@ -285,7 +313,7 @@ class Engine(
             // ---------------------
             //  Core systems update
             // ---------------------
-            if (Application != null)
+            if (application != null)
                 _events.captureInputs() // Flush the input events once per frame...
 
             Console.writeConfiguration() //TODO: only write when CVars are updated?
@@ -341,7 +369,7 @@ class Engine(
             // --------------------
             //  Client-side update
             // --------------------
-            if (!_isServerDedicated && Application != null) {
+            if (!_isServerDedicated && application != null) {
                 processEventLoop() // Run again to avoid a frame of latency...
                 executeSystemCommands()
 
@@ -352,9 +380,9 @@ class Engine(
                 // - Command the window to send a notification to a shared (with the client) simulation/game object.
                 // - Pass the window to the client and forget about it. Then ask it to render.
                 //TODO: Multi-thread the client updating and rendering? Research required.
-                if (Application.isRunning) {
-                    Application.update()
-                    Application.render()
+                if (application.isRunning) {
+                    application.update()
+                    application.render()
                 } else {
                     _isRunning = false
                 }

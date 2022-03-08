@@ -1,6 +1,5 @@
 package rythmGame.simulation
 
-import engine.network.common.NetAddress
 import engine.network.common.NetMessage
 import engine.network.common.NetMessageType
 import engine.network.server.ServerClient
@@ -26,13 +25,12 @@ class ServerLogic : ServerGameLogic {
             player.update(updateTimeStep / 100f)
         }
 
-        server.Session.getClient(NetAddress.loopbackClient)?.let { client ->
+        server.Session.Clients.forEach { client ->
             server.sendMessage(
                 client,
                 NetMessage(NetMessageType.SV_GameState, gameState)
             )
         }
-
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -43,7 +41,7 @@ class ServerLogic : ServerGameLogic {
         //Log.debug("ServerLogic", "Received $message from $client")
     }
 
-    override fun clientConnect(client: ServerClient, message: NetMessage): Boolean {
+    override fun clientConnect(client: ServerClient, message: String): Boolean {
         //todo
         return true //Accept all clients
     }

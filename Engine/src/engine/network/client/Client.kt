@@ -7,7 +7,7 @@ import engine.network.common.*
 
 class Client(
     private val _network: NetManager,
-    private val _logic: ClientGameLogic,
+    val Logic: ClientGameLogic,
     renderLogic: RenderLogic
 ) {
 
@@ -20,17 +20,17 @@ class Client(
 
     init {
         Log.info("Client", "Initializing...")
-        _logic.initialize(ClientInfo(this, renderLogic))
+        Logic.initialize(ClientInfo(this, renderLogic))
     }
 
     fun updateFrame(deltaTime: Long) {
-        _logic.updateFrame(deltaTime)
+        Logic.updateFrame(deltaTime)
     }
 
     fun shutdown() {
         Log.info("Client", "Shutting down...")
         Log.Indent++
-        _logic.close()
+        Logic.close()
         Log.Indent--
         Log.info("Client", "Shutdown complete.")
     }
@@ -87,7 +87,7 @@ class Client(
         }
 
         if (true) {
-            _logic.MessageReceive(packet.Message)
+            Logic.MessageReceive(packet.Message)
         }
 
         //TODO:

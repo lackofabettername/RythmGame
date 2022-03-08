@@ -10,7 +10,7 @@ interface ServerGameLogic {
 
     fun clientMessageReceive(client: ServerClient, message: NetMessage)
 
-    fun clientConnect(client: ServerClient, message: NetMessage): Boolean
+    fun clientConnect(client: ServerClient, message: String): Boolean
 
     fun shutdown()
 

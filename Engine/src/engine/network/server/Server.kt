@@ -7,7 +7,7 @@ import engine.network.common.NetMessageType.CL_UserCommand
 
 class Server(
     private val _network: NetManager,
-    private val _logic: ServerGameLogic
+    val Logic: ServerGameLogic
 ) {
 
     @Deprecated("can this be removed?")
@@ -16,15 +16,18 @@ class Server(
     val UpdateTimeStep = 100 //100ms so 10 ups
 
     private val _isRunning = false
-    internal var _gameTime: Long = 0
-    private var _gameTimeResidual: Long = 0
+    internal var _gameTime = 0L
+    private var _gameTimeResidual = 0L
 
     private val _address = NetAddress.localServer
     internal val _session = ServerSession()
 
     init {
         Log.info("Server", "Initializing...")
-        _logic.initialize(ServerInformation(this))
+        Log.Indent++
+        Logic.initialize(ServerInformation(this))
+        Log.Indent--
+        Log.info("Server", "Initialized.")
     }
 
     fun updateFrame(deltaTime: Long) {
@@ -35,7 +38,7 @@ class Server(
             _gameTime += UpdateTimeStep
             _gameTimeResidual -= UpdateTimeStep
 
-            _logic.update(UpdateTimeStep)
+            Logic.update(UpdateTimeStep)
 
             //TODO: Update the game here
         }
@@ -45,7 +48,7 @@ class Server(
         Log.info("Server", "Shutting down...")
         Log.Indent++
 
-        _logic.shutdown()
+        Logic.shutdown()
 
         Log.Indent--
         Log.info("Server", "Shutdown complete.")
@@ -62,7 +65,7 @@ class Server(
 
             // Make sure it's a valid, in-sequence packet
             if (client.Channel.process(packet)) {
-                ServerParse.clientMessage(_logic, client, packet.Message)
+                ServerParse.clientMessage(Logic, client, packet.Message)
             }
         } else { // Connectionless packet
             onNetPacketReceivedOOB(packet)
@@ -70,31 +73,41 @@ class Server(
     }
 
     private fun onNetPacketReceivedOOB(packet: NetPacket) {
-        val message = packet.Message
-        when (message.Type) {
-            CL_CommandString -> {//New client
-                Log.trace("Server", "Client connecting...")
-                val client = ServerClient(packet.SenderAddress, this._address)
+        when (packet.Message.Type) {
+            CL_CommandString -> {
+                val message = packet.Message.Data as String
 
-                if (!_logic.clientConnect(client, packet.Message)) {
-                    Log.trace("Server", "Client rejected!")
-                    return //Client rejected.
+                if (message == "Connect") {// New client
+                    clientConnect(packet.SenderAddress, message)
+                    return
                 }
-                Log.trace("Server", "Client accepted.")
 
-                //Add client and send confirmation
-                _session.addClient(packet.SenderAddress, client)
-                sendMessage(
-                    client,
-                    NetMessage(
-                        NetMessageType.SV_CommandString,
-                        "Confirmed"
-                    )
-                )
+                TODO()
             }
 
             CL_UserCommand -> TODO()
         }
+    }
+
+    private fun clientConnect(address: NetAddress, message: String) {
+        Log.trace("Server", "Client connecting...")
+        val client = ServerClient(address, this._address)
+
+        if (!Logic.clientConnect(client, message)) {
+            Log.trace("Server", "Client rejected!")
+            return //Client rejected.
+        }
+        Log.trace("Server", "Client accepted.")
+
+        //Add client and send confirmation
+        _session.addClient(address, client)
+        sendMessage(
+            client,
+            NetMessage(
+                NetMessageType.SV_CommandString,
+                "Confirmed"
+            )
+        )
     }
     //endregion
 
