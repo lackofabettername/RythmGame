@@ -8,11 +8,9 @@ import engine.application.events.Key
 import engine.application.events.KeyEvent
 import engine.application.events.KeyEventType
 import engine.application.rendering.Shader
-import engine.console.logging.Log
 import engine.network.client.ClientState
-import engine.network.common.NetAddress
-import rythmGame.simulation.ClientLogic
 import rythmGame.common.PlayerInput
+import rythmGame.simulation.ClientLogic
 import util.Matrix3x3
 
 class GameRenderLogic(
@@ -23,6 +21,8 @@ class GameRenderLogic(
     val viewMat = Matrix3x3()
 
     lateinit var playerKeyBinds: HashMap<Key, PlayerInput>
+
+    var song: String = ""
 
     override fun initialize(window: Window) {
         shader = Shader()
@@ -42,11 +42,7 @@ class GameRenderLogic(
     }
 
     override fun onStart(engine: Engine) {
-        Log.debug("Client", "Connecting to server")
-        do {
-            client.client.connect(NetAddress.loopbackServer)
-            Thread.sleep(100)
-        } while (client.client.State != ClientState.Connected && client.client.State != ClientState.Active)
+        updateViewMatrix()
     }
 
     override fun onUpdate() {
@@ -54,9 +50,12 @@ class GameRenderLogic(
     }
 
     override fun onRender() {
+        if (client.client.State != ClientState.Connected && client.client.State != ClientState.Active) {
+            return
+        }
+
         if (window.IsResized)
             updateViewMatrix()
-
 
         window.setClearColor(.05f, .05f, .05f, 1f)
         window.clear(Window.ColorBuffer)

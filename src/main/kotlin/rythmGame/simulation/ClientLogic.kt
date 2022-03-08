@@ -1,11 +1,12 @@
 package rythmGame.simulation
 
 import engine.console.logging.Log
+import engine.network.client.ClientGameLogic
+import engine.network.client.ClientInfo
+import engine.network.client.ClientState
 import engine.network.common.NetAddress
 import engine.network.common.NetMessage
 import engine.network.common.NetMessageType
-import engine.network.client.ClientGameLogic
-import engine.network.client.ClientInfo
 import rythmGame.common.GameState
 import rythmGame.common.PlayerInput
 
@@ -24,7 +25,10 @@ class ClientLogic : ClientGameLogic {
             NetAddress.loopbackServer,
             NetMessage(
                 NetMessageType.CL_UserCommand,
-                input to activate
+                ClientCommand(
+                    ClientCommand.Type.PlayerMovement,
+                    input to activate
+                )
             )
         )
     }
@@ -34,8 +38,11 @@ class ClientLogic : ClientGameLogic {
     }
 
     override fun updateFrame(deltaTime: Long) {
+        if (client.State != ClientState.Active) return
+
         time += deltaTime
         val t = (time - gsPast.timeStamp).toFloat() / (gsFuture.timeStamp - gsPast.timeStamp) - 1
+        if (t !in 0f..1f) Log.debug("$t")
         gsNow.lerp(t, gsPast, gsFuture)
     }
 

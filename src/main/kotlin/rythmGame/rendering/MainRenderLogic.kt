@@ -7,26 +7,25 @@ import engine.application.events.InputEvent
 import rythmGame.simulation.ClientLogic
 
 class MainRenderLogic(
-    val client: ClientLogic
 ) : RenderLogic {
     lateinit var engine: Engine
     lateinit var window: Window
 
+    var client: ClientLogic? = null
+
     val gui = GUI()
 
-    lateinit var gameRenderer: GameRenderLogic
+    val gameRenderer by lazy { GameRenderLogic(window, client!!) }
 
     override fun initialize(window: Window) {
         gui.initialize(window)
-        gui.Windows += SettingsGUI(gui, this)
     }
 
     override fun onStart(engine: Engine) {
         this.engine = engine
-        this.window = engine.Application!!.Window
+        this.window = engine.Window!!
 
-        gameRenderer = GameRenderLogic(window, client)
-
+        gui.Windows += SettingsGUI(gui, this, engine)
     }
 
     override fun onUpdate() {

@@ -3,18 +3,18 @@ package rythmGame
 import engine.Engine
 import engine.console.logging.Log
 import engine.console.logging.LogLevel
-import rythmGame.simulation.ClientLogic
+import engine.console.logging.style.Foreground
 import rythmGame.rendering.MainRenderLogic
-import rythmGame.simulation.ServerLogic
 
 fun main() {
-    Log.LogLevel = LogLevel.Trace
+    Log.LogLevel = LogLevel.Debug
+    Log.styleCategory("Client", Foreground.DarkYellow)
+    Log.styleCategory("ClientLogic", Foreground.Orange)
+    Log.styleCategory("Server", Foreground.Green)
 
-    val server = ServerLogic()
-    val client = ClientLogic()
-    val renderer = MainRenderLogic(client)
+    val renderer = MainRenderLogic()
 
-    val engine = Engine(server, client, renderer)
+    val engine = Engine(null, null, renderer)
 
     engine.run()
 }

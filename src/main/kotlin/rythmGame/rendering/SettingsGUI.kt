@@ -1,22 +1,24 @@
 package rythmGame.rendering
 
+import engine.Engine
 import engine.console.Console
 import engine.console.logging.Log
+import engine.network.client.ClientState
 import engine.network.common.NetAddress
-import engine.network.common.NetMessage
-import engine.network.common.NetMessageType
 import imgui.ImGui.*
 import imgui.flag.ImGuiCol
 import imgui.type.ImInt
 import imgui.type.ImString
-import rythmGame.simulation.ClientCommand
+import rythmGame.simulation.ClientLogic
+import rythmGame.simulation.ServerLogic
 import java.io.File
 import kotlin.io.path.Path
 import kotlin.io.path.relativeTo
 
 class SettingsGUI(
     val gui: GUI,
-    val parent: MainRenderLogic
+    val parent: MainRenderLogic,
+    val engine: Engine,
 ) : GUIWindow("Settings") {
 
     init {
@@ -43,25 +45,44 @@ class SettingsGUI(
 
         newLine()
 
+        if (treeNode("Server")) {
+            if (button("Start")) {
+                engine.ServerLogic = ServerLogic()
+            }
+
+            treePop()
+        }
+
+        if (treeNode("Client")) {
+            val connected = parent.client != null && (
+                    parent.client!!.client.State == ClientState.Connected ||
+                            parent.client!!.client.State == ClientState.Active)
+
+            beginDisabled(connected)
+            if (button("Connect")) {
+                val clientLogic = ClientLogic()
+                engine.ClientLogic = clientLogic
+                parent.client = clientLogic
+
+                Log.debug("Client", "Connecting to server")
+                clientLogic.client.connect(NetAddress.loopbackServer)
+            }
+            endDisabled()
+
+            treePop()
+        }
+
         if (treeNode("Music")) {
             musicSelection()
 
             treePop()
         }
 
-        if (treeNode("Server")) {
-
-            treePop()
-        }
-
-        if (treeNode("Client")) {
-
-            treePop()
-        }
-
+        beginDisabled(engine.ClientLogic == null || parent.client!!.client.State != ClientState.Active)
         if (button("Start Game!")) {
-            parent.engine.Application!!.Logic = parent.gameRenderer
+            parent.engine.RenderLogic = parent.gameRenderer
         }
+        endDisabled()
     }
 
     fun musicSelection() {
@@ -103,15 +124,15 @@ class SettingsGUI(
                 musicPaths.map { it.toPath().relativeTo(Path(musicFolderCVar.Text)).toString() }.toTypedArray()
             )
         ) {
-            parent.client.client.send(
-                NetMessage(
-                    NetMessageType.CL_UserCommand,
-                    ClientCommand(
-                        ClientCommand.Type.SongSelection,
-                        musicPaths[selected.get()]
-                    )
-                )
-            )
+            //parent.client.client.send(
+            //    NetMessage(
+            //        NetMessageType.CL_UserCommand,
+            //        ClientCommand(
+            //            ClientCommand.Type.SongSelection,
+            //            musicPaths[selected.get()]
+            //        )
+            //    )
+            //)
             Log.debug("Settings", "Selected ${musicPaths[selected.get()]} (${selected.get()})")
         }
         //endregion

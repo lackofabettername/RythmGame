@@ -86,6 +86,9 @@ class Client(
             return
         }
 
+        if (State == ClientState.Connected && message.Type == NetMessageType.SV_GameState)
+            State = ClientState.Active
+
         if (true) {
             Logic.MessageReceive(packet.Message)
         }

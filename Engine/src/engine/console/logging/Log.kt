@@ -76,11 +76,11 @@ object Log {
         }
 
     //region Error
-    fun error(category: String, message: String, ex: Throwable?) {
+    fun error(category: String, message: String, ex: Throwable) {
         if (ERROR) _logger.log(Error, category, message, ex, *ErrorStyle)
     }
 
-    fun error(message: String, ex: Throwable?) {
+    fun error(message: String, ex: Throwable) {
         if (ERROR) _logger.log(Error, null, message, ex, *ErrorStyle)
     }
 
@@ -94,11 +94,11 @@ object Log {
     //endregion
 
     //region Warn
-    fun warn(category: String, message: String, ex: Throwable?) {
+    fun warn(category: String, message: String, ex: Throwable) {
         if (WARN) _logger.log(Warn, category, message, ex, *WarnStyle)
     }
 
-    fun warn(message: String, ex: Throwable?) {
+    fun warn(message: String, ex: Throwable) {
         if (WARN) _logger.log(Warn, null, message, ex, *WarnStyle)
     }
 
@@ -112,11 +112,11 @@ object Log {
     //endregion
 
     //region Info
-    fun info(category: String, message: String, ex: Throwable?) {
+    fun info(category: String, message: String, ex: Throwable) {
         if (INFO) _logger.log(Info, category, message, ex, *InfoStyle)
     }
 
-    fun info(message: String, ex: Throwable?) {
+    fun info(message: String, ex: Throwable) {
         if (INFO) _logger.log(Info, null, message, ex, *InfoStyle)
     }
 
@@ -130,11 +130,11 @@ object Log {
     //endregion
 
     //region Debug
-    fun debug(category: String, message: String, ex: Throwable?) {
+    fun debug(category: String, message: String, ex: Throwable) {
         if (DEBUG) _logger.log(Debug, category, message, ex, *DebugStyle)
     }
 
-    fun debug(message: String, ex: Throwable?) {
+    fun debug(message: String, ex: Throwable) {
         if (DEBUG) _logger.log(Debug, null, message, ex, *DebugStyle)
     }
 
@@ -148,11 +148,11 @@ object Log {
     //endregion
 
     //region Trace
-    fun trace(category: String, message: String, ex: Throwable?) {
+    fun trace(category: String, message: String, ex: Throwable) {
         if (TRACE) _logger.log(Trace, category, message, ex, *TraceStyle)
     }
 
-    fun trace(message: String, ex: Throwable?) {
+    fun trace(message: String, ex: Throwable) {
         if (TRACE) _logger.log(Trace, null, message, ex, *TraceStyle)
     }
 
