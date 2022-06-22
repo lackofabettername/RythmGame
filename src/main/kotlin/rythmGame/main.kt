@@ -8,9 +8,12 @@ import rythmGame.rendering.MainRenderLogic
 
 fun main() {
     Log.LogLevel = LogLevel.Debug
+    Log.IncludeTrace = true
     Log.styleCategory("Client", Foreground.DarkYellow)
     Log.styleCategory("ClientLogic", Foreground.Orange)
     Log.styleCategory("Server", Foreground.Green)
+    Log.styleCategory("ServerLogic", Foreground.LightGreen)
+    Log.styleCategory("Application", Foreground.LightRed)
 
     val renderer = MainRenderLogic()
 

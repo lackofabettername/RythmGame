@@ -1,5 +1,6 @@
 package rythmGame.simulation
 
+import engine.application.events.MouseEvent
 import engine.console.logging.Log
 import engine.network.client.ClientGameLogic
 import engine.network.client.ClientInfo
@@ -26,8 +27,21 @@ class ClientLogic : ClientGameLogic {
             NetMessage(
                 NetMessageType.CL_UserCommand,
                 ClientCommand(
-                    ClientCommand.Type.PlayerMovement,
+                    ClientCommandType.PlayerMovement,
                     input to activate
+                )
+            )
+        )
+    }
+
+    fun playerInput(event: MouseEvent) {
+        client.send(
+            NetAddress.loopbackServer,
+            NetMessage(
+                NetMessageType.CL_UserCommand,
+                ClientCommand(
+                    ClientCommandType.PlayerMouse,
+                    event
                 )
             )
         )
@@ -42,7 +56,7 @@ class ClientLogic : ClientGameLogic {
 
         time += deltaTime
         val t = (time - gsPast.timeStamp).toFloat() / (gsFuture.timeStamp - gsPast.timeStamp) - 1
-        if (t !in 0f..1f) Log.debug("$t")
+        //if (t !in 0f..1f) Log.debug("$t")
         gsNow.lerp(t, gsPast, gsFuture)
     }
 
@@ -51,7 +65,7 @@ class ClientLogic : ClientGameLogic {
     }
 
     override fun MessageReceive(message: NetMessage) {
-        Log.debug("ClientLogic", "Received $message")
+        Log.trace("ClientLogic", "Received $message")
 
         when (message.Type) {
             NetMessageType.SV_GameState -> gameStateReceived(message.Data as GameState)

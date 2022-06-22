@@ -3,10 +3,7 @@ package rythmGame.rendering
 import engine.Engine
 import engine.application.RenderLogic
 import engine.application.Window
-import engine.application.events.InputEvent
-import engine.application.events.Key
-import engine.application.events.KeyEvent
-import engine.application.events.KeyEventType
+import engine.application.events.*
 import engine.application.rendering.Shader
 import engine.network.client.ClientState
 import rythmGame.common.PlayerInput
@@ -37,6 +34,7 @@ class GameRenderLogic(
             Key.A to PlayerInput.MoveLeft,
             Key.S to PlayerInput.MoveDown,
             Key.D to PlayerInput.MoveRight,
+            Key.LShift to PlayerInput.Dash
         )
         client.gsNow.player.graphics = client.gsNow.player.Graphics()
     }
@@ -66,8 +64,8 @@ class GameRenderLogic(
 
     private fun updateViewMatrix() {
         viewMat.set(
-            1f / window.Height / window.AspectRatio, 0f, 0f,
-            0f, 1f / window.Height, 0f,
+            2f / window.Height / window.AspectRatio, 0f, -1f,
+            0f, 2f / window.Height, -1f,
             0f, 0f, 1f,
         )
 
@@ -81,9 +79,16 @@ class GameRenderLogic(
 
     override fun onInputEvent(event: InputEvent) {
         if (event is KeyEvent) {
-            playerKeyBinds[event.Key]?.let {
-                client.playerInput(it, event.Type != KeyEventType.Released)
-            }
+            client.playerInput(
+                playerKeyBinds[event.Key] ?: return,
+                when (event.Type) {
+                    KeyEventType.Pressed -> true
+                    KeyEventType.Released -> false
+                    else -> return
+                }
+            )
+        } else {
+            client.playerInput(event as MouseEvent)
         }
     }
 }

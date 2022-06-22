@@ -16,7 +16,4 @@ interface RenderLogic {
     fun onClose()
 
     fun onInputEvent(event: InputEvent)
-
-    companion object {
-    }
 }

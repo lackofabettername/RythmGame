@@ -1,5 +1,9 @@
 package rythmGame.simulation
 
+import engine.application.events.MouseEvent
+import engine.application.events.MouseEventType
+import engine.console.logging.Log
+import engine.network.common.NetAddress
 import engine.network.common.NetMessage
 import engine.network.common.NetMessageType
 import engine.network.server.ServerClient
@@ -7,6 +11,7 @@ import engine.network.server.ServerGameLogic
 import engine.network.server.ServerInformation
 import rythmGame.common.GameState
 import rythmGame.common.PlayerInput
+import rythmGame.simulation.ClientCommandType.*
 
 class ServerLogic : ServerGameLogic {
 
@@ -42,6 +47,8 @@ class ServerLogic : ServerGameLogic {
     }
 
     override fun clientConnect(client: ServerClient, message: String): Boolean {
+        if (client.Address == NetAddress.invalid) return false
+
         //todo
         return true //Accept all clients
     }
@@ -52,13 +59,23 @@ class ServerLogic : ServerGameLogic {
     @Suppress("UNCHECKED_CAST")
     fun clientInput(input: ClientCommand) {
         when (input.type) {
-            ClientCommand.Type.PlayerMovement -> {
+            PlayerMovement -> {
                 val (input, activated) = input.data as Pair<PlayerInput, Boolean>
                 if (activated)
                     gameState.player.inputs += input
                 else
                     gameState.player.inputs -= input
             }
+            PlayerMouse -> {
+                val mouseEvent = input.data as MouseEvent
+                if (mouseEvent.Type == MouseEventType.Moved)
+                    gameState.player.mouse copyFrom mouseEvent.Position
+            }
+            SongSelection -> {
+                TODO()
+            }
+
+            else -> Log.debug("ServerLogic", "TODO: $input")
         }
     }
 }
