@@ -1,16 +1,19 @@
 package engine.application.events
 
+import util.Vector2
+
 //TODO: include which window it was sent from?
 @Suppress("PropertyName")
 class MouseEvent private constructor(
     val Type: MouseEventType,
     private val _valueA: Int,
     private val _valueB: Int,
-    dummy: Boolean
+    dummy: Boolean //To avoid conflicting constructors
 ) : InputEvent(InputEventType.Mouse) {
 
     val X get() = Float.fromBits(_valueA)
     val Y get() = Float.fromBits(_valueB)
+    val Position inline get() = Vector2(X, Y)
 
     val Button get() = _valueA
     val Mods get() = Modifiers(_valueB)

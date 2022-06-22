@@ -3,11 +3,8 @@ package rythmGame.simulation
 import java.io.Serializable
 
 data class ClientCommand(
-    val type: Type,
+    val type: ClientCommandType,
     val data: Serializable
 ) : Serializable {
-    enum class Type {
-        PlayerMovement,
-        SongSelection
-    }
+
 }

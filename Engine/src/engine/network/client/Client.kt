@@ -21,6 +21,7 @@ class Client(
     init {
         Log.info("Client", "Initializing...")
         Logic.initialize(ClientInfo(this, renderLogic))
+        Log.info("Client", "Initialized.")
     }
 
     fun updateFrame(deltaTime: Long) {
@@ -36,7 +37,7 @@ class Client(
     }
 
     fun connect(address: NetAddress) {
-        Log.trace("Client", "Sending connection request to $address...")
+        Log.info("Client", "Sending connection request to $address...")
         sendMessage(
             address,
             NetMessage(
@@ -76,11 +77,11 @@ class Client(
             if (message.Type == NetMessageType.SV_CommandString) {
                 if (message.Data != "Confirmed") {
                     State = ClientState.Disconected
-                    Log.trace("Client", "Connection rejected!")
+                    Log.info("Client", "Connection rejected!")
                 } else {
                     State = ClientState.Connected
                     ServerAddress = packet.SenderAddress
-                    Log.trace("Client", "Connection accepted!")
+                    Log.info("Client", "Connection accepted!")
                 }
             }
             return

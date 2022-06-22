@@ -10,6 +10,14 @@ data class NetAddress private constructor(
 ) : Serializable {
 
     companion object {
+        val invalid by lazy {
+            NetAddress(
+                NetAddressType.Invalid,
+                NetAddressable.Unknown,
+                InetAddress.getByName("0.0.0.0")
+            )
+        }
+
         val loopbackClient by lazy {
             NetAddress(
                 NetAddressType.Loopback,

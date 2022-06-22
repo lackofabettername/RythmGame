@@ -108,7 +108,7 @@ class Application(
                     MouseEvent(
                         MouseEventType.Moved,
                         x.toFloat(),
-                        y.toFloat()
+                        Window.Height - y.toFloat()
                     )
                 )
             }

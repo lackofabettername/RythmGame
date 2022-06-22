@@ -19,7 +19,6 @@ class Server(
     internal var _gameTime = 0L
     private var _gameTimeResidual = 0L
 
-    private val _address = NetAddress.localServer
     internal val _session = ServerSession()
 
     init {
@@ -30,7 +29,7 @@ class Server(
         Log.info("Server", "Initialized.")
     }
 
-    fun updateFrame(deltaTime: Long) {
+    fun update(deltaTime: Long) {
 
         // Run the game in steps
         _gameTimeResidual += deltaTime
@@ -84,20 +83,27 @@ class Server(
 
                 TODO()
             }
-
             CL_UserCommand -> TODO()
+            else -> TODO()
         }
     }
 
     private fun clientConnect(address: NetAddress, message: String) {
-        Log.trace("Server", "Client connecting...")
-        val client = ServerClient(address, this._address)
+        Log.info("Server", "Client connecting...")
+        val client = ServerClient(
+            address,
+            when (address.AddressType) {
+                NetAddressType.Loopback -> NetAddress.loopbackServer
+                NetAddressType.Internet -> NetAddress.localServer
+                else -> NetAddress.invalid
+            }
+        )
 
         if (!Logic.clientConnect(client, message)) {
-            Log.trace("Server", "Client rejected!")
+            Log.info("Server", "Client rejected!")
             return //Client rejected.
         }
-        Log.trace("Server", "Client accepted.")
+        Log.info("Server", "Client accepted.")
 
         //Add client and send confirmation
         _session.addClient(address, client)

@@ -55,6 +55,7 @@ data class Key(val Key: Int, val Scancode: Int, val Modifiers: Modifiers) {
             Z = convert(GLFW.GLFW_KEY_Z)
 
             Space = convert(GLFW.GLFW_KEY_SPACE)
+            LShift = convert(GLFW.GLFW_KEY_LEFT_SHIFT)
 
             Escape = convert(GLFW.GLFW_KEY_ESCAPE)
         }
@@ -87,6 +88,7 @@ data class Key(val Key: Int, val Scancode: Int, val Modifiers: Modifiers) {
         lateinit var Z: Key
 
         lateinit var Space: Key
+        lateinit var LShift: Key
 
         lateinit var Escape: Key
     }

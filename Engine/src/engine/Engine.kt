@@ -313,8 +313,7 @@ class Engine(
             // ---------------------
             //  Core systems update
             // ---------------------
-            if (application != null)
-                _events.captureInputs() // Flush the input events once per frame...
+            if (application != null) _events.captureInputs() // Flush the input events once per frame...
 
             Console.writeConfiguration() //TODO: only write when CVars are updated?
 
@@ -335,7 +334,7 @@ class Engine(
             do {
                 eventTime = processEventLoop()
 
-                if (eventTimeLast > eventTime) {    // Possible on first frame of journal playback...
+                if (eventTimeLast > eventTime) { // Possible on first frame of journal playback...
                     eventTimeLast = eventTime // Protect against negative delta times.
                 }
 
@@ -353,7 +352,7 @@ class Engine(
             // --------------------
             //  Server-side update
             // --------------------
-            _server?.updateFrame(deltaTime)
+            _server?.update(deltaTime)
 
             // Startup or shutdown the client system?
             //if (_isServerDedicated != _server.Dedicated) {
@@ -384,6 +383,7 @@ class Engine(
                     application.update()
                     application.render()
                 } else {
+                    //TODO: Don't close the engine and keep running as server dedicated?
                     _isRunning = false
                 }
             }

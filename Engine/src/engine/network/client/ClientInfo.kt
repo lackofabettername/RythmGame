@@ -11,6 +11,9 @@ class ClientInfo(
     val State: ClientState
         get() = _client.State
 
+    val ServerAddress: NetAddress?
+        get() = _client.ServerAddress
+
     fun send(address: NetAddress, message: NetMessage) = _client.sendMessage(address, message)
 
     /** Sends message to server */
