@@ -10,6 +10,10 @@ class ServerSession {
     private val _connected = HashMap<NetAddress, ServerClient>()
     val Clients get() = _connected.values
 
+    fun init() {
+        _connected.clear()
+    }
+
     fun getClient(address: NetAddress): ServerClient? {
         return _connected[address]
     }

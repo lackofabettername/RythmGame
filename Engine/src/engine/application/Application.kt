@@ -10,7 +10,6 @@ import java.util.function.Consumer
 
 //TODO: Variable Canvas size
 class Application(
-    logic: RenderLogic,
     private val _engine: Engine
 ) {
 
@@ -19,20 +18,8 @@ class Application(
     // - split into two methods?
     //   - initRenderLogic(), to only init the Renderlogic but not use it
     //   - startRenderLogic(), to start using an initialized RenderLogic
-    var Logic = logic
-    set(value) {
-        Log.info("Application", "Initializing render logic...")
-        Log.Indent++
-        value.initialize(Window)
-        Log.Indent--
-        Log.info("Application", "Initialized render logic.")
-
-        field = value
-
-        if (isRunning) {
-            start() //TODO: Refactor this?
-        }
-    }
+    lateinit var Logic: RenderLogic
+        private set
 
     private val _inputEventQueue = ArrayBlockingQueue<InputEvent>(QueueCapacity, true)
     val Window = Window("Freehand")
@@ -41,8 +28,7 @@ class Application(
         private set
 
     //region Core behavior methods
-    @Suppress("NAME_SHADOWING")
-    fun initialize() {
+    init {
         Log.info("Application", "Initializing window...")
         Log.Indent++
 
@@ -65,7 +51,7 @@ class Application(
         vSync.Listeners.add { vSync -> Window.VSync = vSync.clean().Flag }
         windW.Listeners.add { windW -> Window.Width = windW.clean().Value }
         windH.Listeners.add { windH -> Window.Height = windH.clean().Value }
-        resizable.Listeners.add { _ -> Log.warn("Changing window resizability requires restart") }
+        resizable.Listeners.add { Log.warn("Changing window resizability requires restart") }
 
         setCallbacks()
 
@@ -73,16 +59,26 @@ class Application(
 
         Log.Indent--
         Log.info("Application", "Initialized window.")
-
-        //Trigger update
-        Logic = Logic
     }
 
-    fun start() {
+    fun init(logic: RenderLogic) {
+        Log.info("Application", "Initializing render logic...")
+        Log.Indent++
+
+        logic.initialize(Window)
+        Logic = logic
+
+        Log.Indent--
+        Log.info("Application", "Initialized render logic.")
+
+
+
         Log.info("Application", "Starting render logic...")
         Log.Indent++
+
         Logic.onStart(_engine)
         isRunning = true
+
         Log.Indent--
         Log.info("Application", "Started render logic.")
     }

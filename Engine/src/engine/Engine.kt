@@ -30,18 +30,14 @@ import java.util.*
 import java.util.concurrent.ArrayBlockingQueue
 import kotlin.system.exitProcess
 
-class Engine(
-    serverGameLogic: ServerGameLogic? = null,
-    clientGameLogic: ClientGameLogic? = null,
-    renderGameLogic: RenderLogic? = null
-) {
+class Engine {
 
     //region Main engine modules
-    internal val application: Application?
+    internal var application: Application? = null
 
     private val _network: NetManager
-    private var _server: Server?
-    private var _client: Client?
+    private var _server: Server? = null
+    private var _client: Client? = null
 
     private val _events = SysEventManager(this)
     //endregion
@@ -67,20 +63,20 @@ class Engine(
         Console.registerCVarIfAbsent("sys_MaxRenderFPS", 0) // Uncapped
         Console.registerCVarIfAbsent("sys_VSync", false)
 
-        application = renderGameLogic?.let { Application(it, this) }
-        application?.initialize()
+        //application = renderGameLogic?.let { Application(it, this) }
+        //application?.initialize()
 
         _events.initialize()
 
         Log.info("Engine", "Initializing Network...")
         Log.Indent++
         _network = NetManager()
-        _server = serverGameLogic?.let { Server(_network, it) }
-        _client = clientGameLogic?.let { Client(_network, it, renderGameLogic!!) }
+        //_server = serverGameLogic?.let { Server(_network, it) }
+        //_client = clientGameLogic?.let { Client(_network, it, renderGameLogic!!) }
         Log.Indent--
         Log.info("Engine", "Initialized Network")
 
-        application?.start()
+        //application?.start()
 
         _isRunning = true
 
@@ -91,33 +87,53 @@ class Engine(
     //region Engine hooks
     val Window get() = application?.Window
 
-    var RenderLogic by application!!::Logic
+    var RenderLogic
+        get() = application?.Logic
+        set(logic) {
+            if (application == null) {
+                if (logic == null) return
+                application = Application(this)
+                application!!.init(logic)
+
+            } else {
+                if (logic != null)
+                    application!!.init(logic)
+                else {
+                    application!!.close()
+                    application = null
+                }
+            }
+        }
     var ServerLogic
         get() = _server?.Logic
         set(logic) {
-            _server = if (_server == null) {
+            if (_server == null) {
                 if (logic == null) return //No difference
+                _server = Server(_network, logic)
 
-                Server(_network, logic)
             } else {
                 _server!!.shutdown()
 
-                if (logic == null) null
-                else Server(_network, logic)
+                if (logic != null)
+                    _server!!.init(logic)
+                else
+                    _server = null
             }
         }
     var ClientLogic
         get() = _client?.Logic
         set(logic) {
-            _client = if (_client == null) {
+            if (_client == null) {
                 if (logic == null) return //No difference
+                _client = Client(_network, logic)
 
-                Client(_network, logic, RenderLogic)
             } else {
-                _server!!.shutdown()
+                _client!!.shutdown()
 
-                if (logic == null) null
-                else Client(_network, logic, RenderLogic)
+                if (logic != null)
+                    _client!!.init(logic)
+                else
+                    _client = null
             }
         }
     //endregion
@@ -261,7 +277,7 @@ class Engine(
                             when (Args[0]) {
                                 "Application" -> {
                                     application?.close()
-                                    application?.initialize()
+                                    application?.init(application!!.Logic)
                                 }
                                 else -> {
                                     Log.warn("Unknown keyword, ${Foreground.Blue}Application${Style.Reset} is supported.")
@@ -307,6 +323,7 @@ class Engine(
         }
         //endregion
 
+        //WARN: The server cannot have a higher update rate than the application
         while (_isRunning) {
             Log.Indent = 0
 
@@ -354,17 +371,6 @@ class Engine(
             // --------------------
             _server?.update(deltaTime)
 
-            // Startup or shutdown the client system?
-            //if (_isServerDedicated != _server.Dedicated) {
-            //    //TODO: Open or close the console?
-            //    _isServerDedicated = _server.Dedicated
-            //    if (_isServerDedicated) {
-            //        _client.shutdown()
-            //    } else {
-            //        _client.initialize()
-            //    }
-            //}
-
             // --------------------
             //  Client-side update
             // --------------------
@@ -379,9 +385,9 @@ class Engine(
                 // - Command the window to send a notification to a shared (with the client) simulation/game object.
                 // - Pass the window to the client and forget about it. Then ask it to render.
                 //TODO: Multi-thread the client updating and rendering? Research required.
-                if (application.isRunning) {
-                    application.update()
-                    application.render()
+                if (application!!.isRunning) {
+                    application!!.update()
+                    application!!.render()
                 } else {
                     //TODO: Don't close the engine and keep running as server dedicated?
                     _isRunning = false

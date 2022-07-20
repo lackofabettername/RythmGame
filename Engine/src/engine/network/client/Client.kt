@@ -1,17 +1,18 @@
 package engine.network.client
 
-import engine.application.RenderLogic
 import engine.application.events.InputEvent
 import engine.console.logging.Log
 import engine.network.common.*
 
 class Client(
     private val _network: NetManager,
-    val Logic: ClientGameLogic,
-    renderLogic: RenderLogic
+    logic: ClientGameLogic,
 ) {
 
-    var State = ClientState.Disconected
+    lateinit var Logic: ClientGameLogic
+        private set
+
+    lateinit var State: ClientState
         private set
 
     //Todo: update this value
@@ -19,8 +20,19 @@ class Client(
         private set
 
     init {
+        init(logic)
+    }
+
+    fun init(logic: ClientGameLogic) {
         Log.info("Client", "Initializing...")
-        Logic.initialize(ClientInfo(this, renderLogic))
+        Log.Indent++
+
+        Logic = logic
+        logic.initialize(ClientInfo(this))
+        State = ClientState.Disconected
+        ServerAddress = null
+
+        Log.Indent--
         Log.info("Client", "Initialized.")
     }
 

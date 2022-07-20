@@ -7,24 +7,37 @@ import engine.network.common.NetMessageType.CL_UserCommand
 
 class Server(
     private val _network: NetManager,
-    val Logic: ServerGameLogic
+    logic: ServerGameLogic
 ) {
+    lateinit var Logic: ServerGameLogic
+        private set
 
     @Deprecated("can this be removed?")
     var dedicated = false
 
     val UpdateTimeStep = 100 //100ms so 10 ups
 
-    private val _isRunning = false
     internal var _gameTime = 0L
     private var _gameTimeResidual = 0L
 
     internal val _session = ServerSession()
 
     init {
+        init(logic)
+    }
+
+    fun init(logic: ServerGameLogic) {
         Log.info("Server", "Initializing...")
         Log.Indent++
+
+        Logic = logic
         Logic.initialize(ServerInformation(this))
+
+        _gameTime = 0L
+        _gameTimeResidual = 0L
+
+        _session.init()
+
         Log.Indent--
         Log.info("Server", "Initialized.")
     }

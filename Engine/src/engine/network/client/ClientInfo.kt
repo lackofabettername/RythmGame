@@ -6,7 +6,6 @@ import engine.network.common.NetMessage
 
 class ClientInfo(
     private val _client: Client,
-    val RenderLogic: RenderLogic,
 ) {
     val State: ClientState
         get() = _client.State

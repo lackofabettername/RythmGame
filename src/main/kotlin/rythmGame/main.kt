@@ -15,9 +15,8 @@ fun main() {
     Log.styleCategory("ServerLogic", Foreground.LightGreen)
     Log.styleCategory("Application", Foreground.LightRed)
 
-    val renderer = MainRenderLogic()
-
-    val engine = Engine(null, null, renderer)
+    val engine = Engine()
+    engine.RenderLogic = MainRenderLogic()
 
     engine.run()
 }
