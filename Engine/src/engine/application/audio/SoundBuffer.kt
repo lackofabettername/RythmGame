@@ -2,6 +2,7 @@ package engine.application.audio
 
 import engine.files.FileAccessMode
 import engine.files.FileSystem
+import misc.use
 import org.lwjgl.BufferUtils
 import org.lwjgl.openal.AL10.*
 import org.lwjgl.stb.STBVorbis
@@ -13,8 +14,8 @@ import java.nio.ShortBuffer
 
 class SoundBuffer(file: String) {
     val bufferId: Int = alGenBuffers()
-    private val pcm: ShortBuffer
-    private val vorbis: ByteBuffer
+    private var pcm: ShortBuffer? = null
+    private var vorbis: ByteBuffer? = null
 
     init {
         STBVorbisInfo.malloc().use { info ->
@@ -22,7 +23,7 @@ class SoundBuffer(file: String) {
                 FileSystem.openFile(file, FileAccessMode.Read)!!.use { file ->
                     vorbis = BufferUtils.createByteBuffer(file.Channel.size().toInt())
                     file.Channel.read(vorbis)
-                    vorbis.flip()
+                    vorbis!!.flip()
                 }
 
                 val error = stack.mallocInt(1)
@@ -36,7 +37,7 @@ class SoundBuffer(file: String) {
                 val lengthSamples = STBVorbis.stb_vorbis_stream_length_in_samples(decoder)
 
                 pcm = MemoryUtil.memAllocShort(lengthSamples)
-                pcm.limit(STBVorbis.stb_vorbis_get_samples_short_interleaved(decoder, channels, pcm) * channels)
+                pcm!!.limit(STBVorbis.stb_vorbis_get_samples_short_interleaved(decoder, channels, pcm) * channels)
 
                 STBVorbis.stb_vorbis_close(decoder)
             }

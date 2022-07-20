@@ -4,6 +4,7 @@ import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 import java.nio.channels.Channels
 import java.nio.channels.FileChannel
+import java.lang.AutoCloseable
 
 class FileAccess(
     val Channel: FileChannel,

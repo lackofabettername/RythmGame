@@ -1,6 +1,7 @@
 package engine.sortMe
 
 import engine.console.logging.Log
+import misc.use
 import org.lwjgl.openal.AL
 import org.lwjgl.openal.AL10.*
 import org.lwjgl.openal.ALC
@@ -9,6 +10,7 @@ import org.lwjgl.stb.STBVorbis.stb_vorbis_decode_filename
 import org.lwjgl.system.MemoryStack.stackPush
 import org.lwjgl.system.libc.LibCStdlib.free
 import java.nio.ShortBuffer
+import kotlin.contracts.ExperimentalContracts
 import kotlin.math.sin
 
 object SoundTest {
@@ -38,10 +40,10 @@ object SoundTest {
 fun main() {
     SoundTest.initialize()
 
-    var rawAudioBuffer: ShortBuffer?
+    var rawAudioBuffer: ShortBuffer? = null
 
-    var channels: Int
-    var sampleRate: Int
+    var channels = -1
+    var sampleRate = -1
 
     stackPush().use { stack ->
         //Allocate space to store return information from the function
