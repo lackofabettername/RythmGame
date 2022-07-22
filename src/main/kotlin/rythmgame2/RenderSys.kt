@@ -19,7 +19,6 @@ object RenderSys : System {
         shader.bind()
         shader.uniforms["worldTransform"] = transform.WorldTransform
 
-
         glActiveTexture(GL_TEXTURE0)
         render.Texture.bind()
 

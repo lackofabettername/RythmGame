@@ -14,6 +14,8 @@ class InputComp : Component<InputComp> {
     val Mouse = Vector2()
     val PMouse = Vector2()
 
+    val scroll = Vector2()
+
     val PressedButtons = HashSet<Int>()
     val HeldButtons = HashSet<Int>()
     val ReleasedButtons = HashSet<Int>()

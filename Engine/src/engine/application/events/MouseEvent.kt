@@ -13,7 +13,9 @@ class MouseEvent private constructor(
 
     val X get() = Float.fromBits(_valueA)
     val Y get() = Float.fromBits(_valueB)
+
     val Position inline get() = Vector2(X, Y)
+    val Wheel inline get() = Vector2(X, Y)
 
     val Button get() = _valueA
     val Mods get() = Modifiers(_valueB)

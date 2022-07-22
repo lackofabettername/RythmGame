@@ -18,5 +18,7 @@ object InputSys : System {
         inputs.ReleasedButtons.clear()
 
         inputs.PMouse copyFrom inputs.Mouse
+
+        inputs.scroll.clear()
     }
 }
