@@ -13,7 +13,7 @@ interface RenderLogic {
 
     fun onRender()
 
-    fun onClose()
-
     fun onInputEvent(event: InputEvent)
+
+    fun onClose()
 }
