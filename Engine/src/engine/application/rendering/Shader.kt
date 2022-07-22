@@ -29,7 +29,7 @@ class Shader {
     var FragID = 0
         private set
 
-    private val _uniforms = HashMap<String, Int>()
+    val uniforms = Uniforms()
 
     //region Constructor
     fun createVertexShader(fileName: String) {
@@ -86,50 +86,6 @@ class Shader {
     }
     //endregion
 
-    fun createUniform(uniform: String) {
-        val uniformLocation = glGetUniformLocation(ID, uniform)
-
-        require(uniformLocation >= 0) { "Could not find uniform: $uniform" }
-
-        _uniforms[uniform] = uniformLocation
-    }
-
-    fun createUniforms(vararg uniforms: String) {
-        for (uniform in uniforms) {
-            createUniform(uniform)
-        }
-    }
-
-    fun setUniform(uniform: String, value: Int) {
-        glUniform1i(getUniform(uniform), value)
-    }
-
-    fun setUniform(uniform: String, value: Float) {
-        glUniform1f(getUniform(uniform), value)
-    }
-
-    fun setUniform(uniform: String, value: Vector2) {
-        glUniform2f(getUniform(uniform), value.x, value.y)
-    }
-
-    fun setUniform(uniform: String, value: Vector3) {
-        glUniform3f(getUniform(uniform), value.x, value.y, value.z)
-    }
-
-    fun setUniform(uniform: String, value: Matrix3x3, transpose: Boolean = false) {
-        glUniformMatrix3fv(getUniform(uniform), !transpose, value.values)
-    }
-
-    fun setUniform(uniform: String, value: Matrix4x4, transpose: Boolean = false) {
-        glUniformMatrix4fv(getUniform(uniform), !transpose, value.values)
-    }
-
-    private fun getUniform(uniform: String): Int {
-        val id = _uniforms[uniform]
-        require(id != null) { "Could not find uniform $uniform" }
-        return id
-    }
-
     fun link() {
         glLinkProgram(ID)
 
@@ -177,6 +133,46 @@ class Shader {
         if (ID != 0) {
             glDeleteProgram(ID)
         }
+    }
+
+    inner class Uniforms internal constructor() {
+        private val _keys = HashMap<String, Int>()
+
+        operator fun plusAssign(uniform: String) {
+            val uniformLocation = glGetUniformLocation(ID, uniform)
+
+            require(uniformLocation >= 0) { "Could not create uniform \"$uniform\"" }
+
+            _keys[uniform] = uniformLocation
+        }
+
+        operator fun set(uniform: String, value: Int) {
+            glUniform1i(getUniform(uniform), value)
+        }
+
+        operator fun set(uniform: String, value: Float) {
+            glUniform1f(getUniform(uniform), value)
+        }
+
+        operator fun set(uniform: String, value: Vector2) {
+            glUniform2f(getUniform(uniform), value.x, value.y)
+        }
+
+        operator fun set(uniform: String, value: Vector3) {
+            glUniform3f(getUniform(uniform), value.x, value.y, value.z)
+        }
+
+        operator fun set(uniform: String, value: Matrix3x3) {
+            glUniformMatrix3fv(getUniform(uniform), true, value.values)
+        }
+
+        operator fun set(uniform: String, value: Matrix4x4) {
+            glUniformMatrix4fv(getUniform(uniform), true, value.values)
+        }
+
+        private fun getUniform(uniform: String) =
+            _keys[uniform] ?: error("Could not find uniform $uniform")
+
     }
 
     companion object {

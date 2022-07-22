@@ -29,17 +29,17 @@ class Matrix3x3(
         )
     )
 
-    private operator fun get(ind: Int) = values[ind]
-    operator fun get(i: Int, j: Int): Float {
+    inline private operator fun get(ind: Int) = values[ind]
+    inline operator fun get(i: Int, j: Int): Float {
         require(i in 0..2 && j in 0..2)
         return values[i + j * 3]
     }
 
-    private operator fun set(ind: Int, value: Float) {
+    inline private operator fun set(ind: Int, value: Float) {
         values[ind] = value
     }
 
-    operator fun set(i: Int, j: Int, value: Float) {
+    inline operator fun set(i: Int, j: Int, value: Float) {
         require(i in 0..2 && j in 0..2)
         values[i + j * 3] = value
     }
