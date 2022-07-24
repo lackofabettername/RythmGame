@@ -1,9 +1,8 @@
-package rythmgame2
+package rythmgame2.common
 
 import ecs.ECS
 import ecs.Entity
 import ecs.System
-import ecs.SystemType
 
 object MoveSys : System {
     override val keys = setOf(TransformComp, VelComp)

@@ -1,4 +1,4 @@
-package rythmgame2
+package rythmgame2.common
 
 import ecs.ECS
 import ecs.Entity

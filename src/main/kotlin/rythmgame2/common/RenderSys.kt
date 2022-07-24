@@ -1,4 +1,4 @@
-package rythmgame2
+package rythmgame2.common
 
 import org.lwjgl.opengl.GL13.GL_TEXTURE0
 import org.lwjgl.opengl.GL13.glActiveTexture

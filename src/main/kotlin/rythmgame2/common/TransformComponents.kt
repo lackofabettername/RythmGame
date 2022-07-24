@@ -1,4 +1,4 @@
-package rythmgame2
+package rythmgame2.common
 
 import util.Matrix3x3
 import util.Vector2
