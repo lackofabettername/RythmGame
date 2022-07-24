@@ -6,6 +6,7 @@ import ecs.ECS
 import ecs.Entity
 import ecs.System
 import ecs.SystemType
+import shaders.TestShader
 
 object RenderSys : System {
     override val type = SystemType.Render
@@ -17,7 +18,7 @@ object RenderSys : System {
 
         val shader = render.Shader
         shader.bind()
-        shader.uniforms["worldTransform"] = transform.WorldTransform
+        shader.uniforms[TestShader.worldTransform] = transform.WorldTransform
 
         glActiveTexture(GL_TEXTURE0)
         render.Texture.bind()

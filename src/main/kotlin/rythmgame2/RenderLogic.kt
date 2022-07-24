@@ -14,6 +14,7 @@ import util.Vector2
 import ecs.ECS
 import ecs.SystemType
 import engine.application.events.*
+import shaders.TestShader
 
 class RenderLogic : RenderLogic {
     lateinit var window: Window
@@ -42,16 +43,16 @@ class RenderLogic : RenderLogic {
 
     fun createShader() {
         shader = Shader()
-        shader.createVertexShader("Test")
-        shader.createFragmentShader("Test")
+        shader.createVertexShader(TestShader.Path)
+        shader.createFragmentShader(TestShader.Path)
         shader.link()
         shader.bind()
 
-        shader.uniforms += "viewTransform"
-        shader.uniforms += "worldTransform"
-        shader.uniforms += "spriteTexture"
+        shader.uniforms += TestShader.viewTransform
+        shader.uniforms += TestShader.worldTransform
+        shader.uniforms += TestShader.spriteTexture
 
-        shader.uniforms["viewTransform"] = Matrix3x3(
+        shader.uniforms[TestShader.viewTransform] = Matrix3x3(
             2f / window.Width, 0f, -1f,
             0f, 2f / window.Height, -1f,
             0f, 0f, 1f

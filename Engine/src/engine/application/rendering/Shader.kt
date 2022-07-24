@@ -15,10 +15,9 @@ import util.Vector3
 //If uniforms aren't being set, you may have forgotten to bind the shader
 class Shader {
     val ID = glCreateProgram()
-
-    init {
-        check(ID != 0) { "Could not create ShaderProgram" }
-    }
+        .also {
+            require(it != 0) { "Could not create ShaderProgram" }
+        }
 
     var VertID = 0
         private set
