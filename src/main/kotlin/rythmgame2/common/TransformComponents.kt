@@ -1,16 +1,16 @@
 package rythmgame2.common
 
-import util.Matrix3x3
-import util.Vector2
 import ecs.Component
 import ecs.ComponentKey
+import util.Matrix3x3
+import util.Vector2
 import kotlin.math.cos
 import kotlin.math.sin
 
 class TransformComp(
-    val Pos: Vector2,
-    var Rot: Float,
-    val Scale: Vector2,
+    val Pos: Vector2 = Vector2(0f,0f),
+    var Rot: Float = 0f,
+    val Scale: Vector2 = Vector2(1f, 1f),
 ) : Component<TransformComp> {
     val WorldTransform: Matrix3x3
         get() {

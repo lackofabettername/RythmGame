@@ -1,17 +1,21 @@
 package rythmgame2
 
 import ecs.ECS
-import ecs.Entity
 import ecs.SystemType
 import engine.Engine
 import engine.application.RenderLogic
 import engine.application.Window
 import engine.application.events.*
+import engine.application.rendering.FrameBuffer
 import engine.application.rendering.Shader
 import rythmgame2.common.InputComp
 import rythmgame2.common.InputSys
 import rythmgame2.common.RenderSys
-import shaders.TestShader
+import rythmgame2.common.createWalls
+import rythmgame2.player.PlayerComp.Companion.createPlayer
+import rythmgame2.player.PlayerSys
+import shaders.ColorShader
+import shaders.TextureShader
 import util.Matrix3x3
 
 class RenderLogic : RenderLogic {
@@ -20,9 +24,13 @@ class RenderLogic : RenderLogic {
     val ecs = ECS()
     val input = InputComp()
 
-    var player = Entity(-1, -1)
+    lateinit var textureShader: Shader
+    lateinit var colorShader: Shader
 
-    lateinit var shader: Shader
+    lateinit var shadowBuffer: FrameBuffer
+
+    val player by lazy { createPlayer(ecs, textureShader) }
+    val walls by lazy { createWalls(ecs, shadowBuffer, colorShader) }
 
     override fun initialize(window: Window) {
         this.window = window
@@ -34,28 +42,49 @@ class RenderLogic : RenderLogic {
 
         ecs.Systems += InputSys //Add this last!
 
+        createShaders()
 
-        createShader()
-        player = PlayerComp.createPlayer(ecs, shader)
+        shadowBuffer = FrameBuffer(window.Width, window.Height)
+
+        //trigger lazy
+        player.id
+        walls.id
     }
 
-    fun createShader() {
-        shader = Shader()
-        shader.createVertexShader(TestShader.Path)
-        shader.createFragmentShader(TestShader.Path)
-        shader.link()
-        shader.bind()
-
-        shader.uniforms += TestShader.viewTransform
-        shader.uniforms += TestShader.worldTransform
-        shader.uniforms += TestShader.spriteTexture
-
-        shader.uniforms[TestShader.viewTransform] = Matrix3x3(
+    private val viewMatrix
+        get() = Matrix3x3(
             2f / window.Width, 0f, -1f,
             0f, 2f / window.Height, -1f,
             0f, 0f, 1f
         )
 
+    fun createShaders() {
+        //region Texture shader
+        textureShader = Shader()
+        textureShader.createVertexShader(TextureShader.Path)
+        textureShader.createFragmentShader(TextureShader.Path)
+        textureShader.link()
+        textureShader.bind()
+
+        textureShader.uniforms += TextureShader.viewTransform
+        textureShader.uniforms += TextureShader.worldTransform
+        textureShader.uniforms += TextureShader.spriteTexture
+
+        textureShader.uniforms[TextureShader.viewTransform] = viewMatrix
+        //endregion
+
+        //region Color shader
+        colorShader = Shader()
+        colorShader.createVertexShader(ColorShader.Path)
+        colorShader.createFragmentShader(ColorShader.Path)
+        colorShader.link()
+        colorShader.bind()
+
+        colorShader.uniforms += ColorShader.viewTransform
+        colorShader.uniforms += ColorShader.worldTransform
+
+        colorShader.uniforms[ColorShader.viewTransform] = viewMatrix
+        //endregion
     }
 
     override fun onStart(engine: Engine) {

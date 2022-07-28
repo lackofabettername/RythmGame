@@ -8,7 +8,11 @@ import kotlin.math.sqrt
 import kotlin.random.Random
 
 @Suppress("MemberVisibilityCanBePrivate")
-class Vector3(var x: Float = 0f, var y: Float = 0f, var z: Float = 0f) : Vector {
+class Vector3(
+    var x: Float = 0f,
+    var y: Float = 0f,
+    var z: Float = 0f
+) : Vector {
 
     //region Constructors
     constructor(v: Vector3) : this(v.x, v.y, v.z)
@@ -346,6 +350,11 @@ class Vector3(var x: Float = 0f, var y: Float = 0f, var z: Float = 0f) : Vector 
                 Math.random().toFloat()
             ) * 2 - 1).normalize()
         }
+
+        fun arrayOf(vararg values: Float) = values.toList()
+            .chunked(3)
+            .map { Vector3(it[0], it.getOrElse(1) { 0f }, it.getOrElse(2) { 0f }) }
+            .toTypedArray()
 
         fun toFloatArray(v: Vector3): FloatArray {
             return floatArrayOf(v.x, v.y, v.z)

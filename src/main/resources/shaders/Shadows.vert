@@ -19,12 +19,12 @@ void main() {
 
     pos = viewTransform * worldTransform * pos;
 
-    float v = length(inPos - lightPos);
-    if (castLength > 1.) {
-        v += 30.;
-    }
-    //v /= 400.;
-    v /= v + 1.;
-    pos.z = v;
+    //float v = length(inPos - lightPos);
+    //if (castLength > 1.) {
+    //    v += 30.;
+    //}
+    ////v /= 400.;
+    //v /= v + 1.;
+    //pos.z = v;
     gl_Position = vec4(pos.xyz, 1.0);
 }

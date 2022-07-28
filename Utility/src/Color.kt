@@ -9,25 +9,21 @@ import kotlin.math.min
  * Stores colors in either RGB, HSV or HSL
  */
 @Suppress("unused")
-class Color(//TODO lerp, mix, setters
+class Color private constructor(
+//TODO lerp, mix, setters
     private var _mode: ColorMode,
-    v0: Float,
-    v1: Float,
-    v2: Float,
-    alpha: Float = 1f
+    private var _v0: Float,
+    private var _v1: Float,
+    private var _v2: Float,
+    private var _alpha: Float,
+    var range: Float,
 ) : Vector, Serializable {
-    private var _v0 = v0
-    private var _v1 = v1
-    private var _v2 = v2
-
-    var alpha = alpha
-        get() = field / range
+    var alpha
+        get() = _alpha * range
         set(value) {
-            field = value / range
+            _alpha = value / range
         }
 
-
-    var range = 1f
 
     override fun getDimension(): Int {
         return 4
@@ -261,51 +257,56 @@ class Color(//TODO lerp, mix, setters
 
     //endregion
 
-    fun lerp(t: Float, col: Color) {
-        val temp = range to col.range
-        range = 1f
-        col.range = 1f
-
-        when (_mode) {
-            //@formatter:off
-            ColorMode.RGB -> {
-                _v0 += t * (col.red           - _v0)
-                _v1 += t * (col.green         - _v1)
-                _v2 += t * (col.blue          - _v2)
-            }
-            ColorMode.HSV -> {
-                _v0 += t * (col.hue           - _v0)
-                _v1 += t * (col.saturationHSV - _v1)
-                _v2 += t * (col.value         - _v2)
-            }
-            ColorMode.HSL -> {
-                _v0 += t * (col.hue           - _v0)
-                _v1 += t * (col.saturationHSL - _v1)
-                _v2 += t * (col.lightness     - _v2)
-            }
-            //@formatter:on
-        }
-        alpha += t * (col.alpha - alpha)
-
-        range = temp.first
-        col.range = temp.second
-    }
-
-    fun copy() = Color(_mode, _v0, _v1, _v2, alpha)
+    fun copy() = Color(_mode, _v0, _v1, _v2, _alpha, range)
 
     companion object {
-        fun lerp(t: Float, a: Color, b: Color): Color {
-            val color = a.copy()
-            color.lerp(t, b)
-            return color
-        }
+        fun rgb(
+            red: Float,
+            green: Float,
+            blue: Float,
+            alpha: Float = 1f,
+            range: Float = 1f
+        ) = Color(
+            ColorMode.RGB,
+            red,
+            green,
+            blue,
+            alpha,
+            range
+        )
 
-        @JvmStatic
-        fun main(args: Array<String>) {
-            val col = Color(ColorMode.HSV, 234f / 360, 0.5f, 0.5f)
-            println(col.red * 255)
-            println(col.green * 255)
-            println(col.blue * 255)
+        fun hsv(
+            hue: Float,
+            saturation: Float,
+            value: Float,
+            alpha: Float = 1f,
+            range: Float = 1f
+        ) = Color(
+            ColorMode.HSV,
+            hue,
+            saturation,
+            value,
+            alpha,
+            range
+        )
+
+        fun hsl(
+            hue: Float,
+            saturation: Float,
+            lightness: Float,
+            alpha: Float = 1f,
+            range: Float = 1f
+        ) = Color(
+            ColorMode.HSL,
+            hue,
+            saturation,
+            lightness,
+            alpha,
+            range
+        )
+
+        fun lerp(t: Float, a: Color, b: Color): Color {
+            TODO()
         }
     }
 }

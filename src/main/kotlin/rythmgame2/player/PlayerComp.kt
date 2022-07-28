@@ -1,4 +1,4 @@
-package rythmgame2
+package rythmgame2.player
 
 import ecs.Component
 import ecs.ComponentKey
@@ -53,8 +53,8 @@ class PlayerComp(
             )
             ecs[player] += RenderComp(
                 mesh,
+                shader,
                 texture,
-                shader
             )
             ecs[player] += PlayerComp(
                 hashMapOf(

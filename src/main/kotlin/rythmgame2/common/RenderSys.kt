@@ -1,12 +1,12 @@
 package rythmgame2.common
 
-import org.lwjgl.opengl.GL13.GL_TEXTURE0
-import org.lwjgl.opengl.GL13.glActiveTexture
 import ecs.ECS
 import ecs.Entity
 import ecs.System
 import ecs.SystemType
-import shaders.TestShader
+import org.lwjgl.opengl.GL13.GL_TEXTURE0
+import org.lwjgl.opengl.GL13.glActiveTexture
+import shaders.TextureShader
 
 object RenderSys : System {
     override val type = SystemType.Render
@@ -18,10 +18,12 @@ object RenderSys : System {
 
         val shader = render.Shader
         shader.bind()
-        shader.uniforms[TestShader.worldTransform] = transform.WorldTransform
+        shader.uniforms[TextureShader.worldTransform] = transform.WorldTransform
 
-        glActiveTexture(GL_TEXTURE0)
-        render.Texture.bind()
+        render.Texture?.let {texture ->
+            glActiveTexture(GL_TEXTURE0)
+            texture.bind()
+        }
 
         render.Mesh.render(shader)
     }

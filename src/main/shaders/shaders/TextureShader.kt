@@ -1,9 +1,9 @@
-//Auto generated from src/main/resources/shaders/TestShader
+//Auto generated from src/main/resources/shaders/TextureShader
 
 package shaders
 
-object TestShader {
-	val Path = "shaders/Test"
+object TextureShader {
+	val Path = "shaders/Texture"
 	val viewTransform = "viewTransform"//vert 
 	val worldTransform = "worldTransform"//vert 
 	val spriteTexture = "spriteTexture"//frag 

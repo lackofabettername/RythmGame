@@ -1,4 +1,4 @@
-package rythmgame2
+package rythmgame2.player
 
 enum class PlayerInput {
     Up,
