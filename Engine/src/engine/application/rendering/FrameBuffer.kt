@@ -11,16 +11,16 @@ class FrameBuffer(
 ) {
     val ID = glGenFramebuffers()
 
-    val colorTexture by lazy { glGenTextures() }
-    val depthTexture by lazy { glGenTextures() }
+    val colorTexture by lazy { Texture() }
+    val depthTexture by lazy { Texture() }
 
 
     fun attachColorBuffer() {
-        attachBuffer(colorTexture, GL_RGB, GL_COLOR_ATTACHMENT0)
+        attachBuffer(colorTexture.ID, GL_RGB, GL_COLOR_ATTACHMENT0)
     }
 
     fun attachDepthBuffer() {
-        attachBuffer(depthTexture, GL_DEPTH_COMPONENT, GL_DEPTH_ATTACHMENT)
+        attachBuffer(depthTexture.ID, GL_DEPTH_COMPONENT, GL_DEPTH_ATTACHMENT)
     }
 
     //TODO: different buffer types, stencil and depth. Multiple color buffers?
@@ -53,7 +53,7 @@ class FrameBuffer(
             0
         )
 
-        unbind()
+        //unbind()
     }
 
     fun verify() {

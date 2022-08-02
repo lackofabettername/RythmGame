@@ -22,7 +22,13 @@ class ShaderUniforms {
                 .toAbsolutePath()
                 .relativeTo(File(resources).toPath())
                 .toString()
-            val `package` = path.removeSuffix("/$genFileName").replace('/', '.')
+                .replace("\\", "/")//Fuck windows
+            val `package` = path.replace("\\", "/")//Fuck windows
+                .removeSuffix("/$genFileName")
+                .replace('/', '.')
+
+            println(path)
+            println(`package`)
 
             val genFile = File("$shaders/$path.kt")
             println("Generating file: ${genFile.absolutePath}")

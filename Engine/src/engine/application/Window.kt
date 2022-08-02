@@ -1,5 +1,6 @@
 package engine.application
 
+import Color
 import engine.console.logging.Log
 import org.lwjgl.glfw.*
 import org.lwjgl.glfw.GLFW.*
@@ -125,6 +126,14 @@ class Window(
         //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
         //glCullFace(GL_BACK)
     }
+
+    //https://youtrack.jetbrains.com/issue/KT-6519/Setter-only-properties#focus=Comments-27-3525647.0-0
+    var clearColor: Color
+        @Deprecated("", level = DeprecationLevel.HIDDEN) // Prevent Kotlin callers
+        get() = throw UnsupportedOperationException()
+        set(color) {
+            glClearColor(color.red, color.green, color.blue, color.alpha)
+        }
 
     fun setClearColor(r: Float, g: Float, b: Float, alpha: Float) {
         glClearColor(r, g, b, alpha)

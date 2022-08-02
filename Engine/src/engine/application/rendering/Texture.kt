@@ -16,48 +16,56 @@ fun ByteBuffer.contentToString() = (0 until this.limit())
     .replace(",", "")
 
 
-class Texture(file: FileAccess) {
-    val ID: Int
-
-    init {
-        val width = BufferUtils.createIntBuffer(1)
-        val height = BufferUtils.createIntBuffer(1)
-        val comp = BufferUtils.createIntBuffer(1)
-
-        val size = file.Channel.size()
-        require(size <= Int.MAX_VALUE) { "TODO: larger files" }
-        val raw = BufferUtils.createByteBuffer(size.toInt())
-        file.Channel.read(raw)
-        raw.flip()
-
-        //Log.trace("Texture", raw.contentToString())
-
-        val data = stbi_load_from_memory(raw, width, height, comp, 4)
-        if (data == null)
-            Log.error(stbi_failure_reason().toString())
-        else {
-            //Log.trace("Texture", "$data")
-            //Log.trace("Texture", data.contentToString())
-            Log.trace("Texture", "${width[0]}, ${height[0]}, ${comp[0]}")
-        }
-
-        ID = glGenTextures()
-        bind()
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
-
-        glPixelStorei(GL_BLEND, GL_LINEAR)
-
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width[0], height[0], 0, GL_RGBA, GL_UNSIGNED_BYTE, data)
-        glGenerateMipmap(GL_TEXTURE_2D)
-
-        stbi_image_free(data)
-    }
+class Texture {
+    val ID = glGenTextures()
 
     fun bind() {
         glBindTexture(GL_TEXTURE_2D, ID)
     }
 
+    fun unbind() {
+        glBindTexture(GL_TEXTURE_2D, 0)
+    }
+
     fun cleanup() {
         glDeleteTextures(ID)
+    }
+
+    companion object {
+        fun load(file: FileAccess): Texture {
+            val width = BufferUtils.createIntBuffer(1)
+            val height = BufferUtils.createIntBuffer(1)
+            val comp = BufferUtils.createIntBuffer(1)
+
+            val size = file.Channel.size()
+            require(size <= Int.MAX_VALUE) { "TODO: larger files" }
+            val raw = BufferUtils.createByteBuffer(size.toInt())
+            file.Channel.read(raw)
+            raw.flip()
+
+            //Log.trace("Texture", raw.contentToString())
+
+            val data = stbi_load_from_memory(raw, width, height, comp, 4)
+            if (data == null)
+                Log.error(stbi_failure_reason().toString())
+            else {
+                //Log.trace("Texture", "$data")
+                //Log.trace("Texture", data.contentToString())
+                Log.trace("Texture", "${width[0]}, ${height[0]}, ${comp[0]}")
+            }
+
+            val texture = Texture()
+            texture.bind()
+            glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
+
+            glPixelStorei(GL_BLEND, GL_LINEAR)
+
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width[0], height[0], 0, GL_RGBA, GL_UNSIGNED_BYTE, data)
+            glGenerateMipmap(GL_TEXTURE_2D)
+
+            stbi_image_free(data)
+
+            return texture
+        }
     }
 }
