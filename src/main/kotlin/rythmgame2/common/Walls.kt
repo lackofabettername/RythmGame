@@ -4,14 +4,12 @@ import Color
 import ecs.ECS
 import ecs.Entity
 import engine.application.rendering.Mesh
-import engine.application.rendering.Shader
 import rythmgame2.common.ShadowMeshComp.Companion.getShadowMesh
 import util.Vector
 import util.Vector2
 
 fun createWalls(
-    ecs: ECS,
-    colorShader: Shader,
+    ecs: ECS
 ): Entity {
     val walls = ecs.createEntity()
 
@@ -56,7 +54,7 @@ fun createWalls(
         Vector2(150f, 80f),
         0.2f,
     )
-    ecs[walls] += RenderComp(mesh, 10, colorShader, null)
+    ecs[walls] += RenderComp(mesh, 10, null)
     ecs[walls] += getShadowMesh(mesh)
 
     return walls

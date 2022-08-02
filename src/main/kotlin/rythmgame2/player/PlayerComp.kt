@@ -6,7 +6,6 @@ import ecs.ECS
 import ecs.Entity
 import engine.application.events.Key
 import engine.application.rendering.Mesh
-import engine.application.rendering.Shader
 import engine.application.rendering.Texture
 import engine.files.FileAccessMode
 import engine.files.FileSystem
@@ -22,7 +21,7 @@ class PlayerComp(
     override val key = PlayerComp
 
     companion object : ComponentKey<PlayerComp> {
-        fun createPlayer(ecs: ECS, shader: Shader): Entity {
+        fun createPlayer(ecs: ECS): Entity {
             val player = ecs.createEntity()
 
             val mesh = Mesh(
@@ -54,7 +53,6 @@ class PlayerComp(
             ecs[player] += RenderComp(
                 mesh,
                 1,
-                shader,
                 texture,
             )
             ecs[player] += PlayerComp(

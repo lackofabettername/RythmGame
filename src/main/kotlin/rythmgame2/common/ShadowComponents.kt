@@ -4,11 +4,9 @@ import ecs.Component
 import ecs.ComponentKey
 import engine.application.rendering.FrameBuffer
 import engine.application.rendering.Mesh
-import engine.application.rendering.Shader
 
 class ShadowComp(
     val Buffer: FrameBuffer,
-    val Shader: Shader,
 ) : Component<ShadowComp> {
     override val key = ShadowComp
 

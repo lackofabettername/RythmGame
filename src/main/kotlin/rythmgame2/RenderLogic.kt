@@ -9,14 +9,10 @@ import engine.application.Window
 import engine.application.events.*
 import engine.application.rendering.FrameBuffer
 import engine.application.rendering.Mesh
-import engine.application.rendering.Shader
 import org.lwjgl.opengl.GL11.*
 import rythmgame2.common.*
 import rythmgame2.player.PlayerComp.Companion.createPlayer
 import rythmgame2.player.PlayerSys
-import shaders.ColorShader
-import shaders.ShadowsShader
-import shaders.TextureShader
 import util.Matrix3x3
 import util.Vector
 import util.Vector2
@@ -24,25 +20,24 @@ import util.Vector2
 class RenderLogic : RenderLogic {
     lateinit var window: Window
 
+    val shadowDownscale = 6
+
     val ecs = ECS()
     val input = InputComp()
-    val shadows by lazy { ShadowComp(shadowBuffer, shadowShader) }
 
-    lateinit var textureShader: Shader
-    lateinit var colorShader: Shader
-    lateinit var shadowShader: Shader
+    val shaders by lazy { ShaderComp(viewMatrix, shadowDownscale) }
 
-    val shadowDownScale = 6
     val shadowBuffer by lazy {
-        val buffer = FrameBuffer(window.Width / shadowDownScale, window.Height / shadowDownScale)
+        val buffer = FrameBuffer(window.Width / shadowDownscale, window.Height / shadowDownscale)
         buffer.attachColorBuffer()
         buffer.attachDepthBuffer()
         buffer.verify()
         buffer
     }
+    val shadows by lazy { ShadowComp(shadowBuffer) }
 
-    val player by lazy { createPlayer(ecs, textureShader) }
-    val walls by lazy { createWalls(ecs, colorShader) }
+    val player by lazy { createPlayer(ecs) }
+    val walls by lazy { createWalls(ecs) }
     val temp = ecs.createEntity()
 
     override fun initialize(window: Window) {
@@ -52,10 +47,8 @@ class RenderLogic : RenderLogic {
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
         window.DepthTest = true
 
-        createShaders()
-
-
         ecs.Singleton += input
+        ecs.Singleton += shaders
         ecs.Singleton += shadows
 
         ecs.Systems += PlayerSys
@@ -63,6 +56,7 @@ class RenderLogic : RenderLogic {
         ecs.Systems += ShadowSysPre
         ecs.Systems += ShadowSys
 
+        ecs.Systems += RenderSysPre
         ecs.Systems += RenderSys
 
         ecs.Systems += InputSys //Add this last!
@@ -90,7 +84,6 @@ class RenderLogic : RenderLogic {
                 ) as Array<Vector>,
             ),
             20,
-            textureShader,
             shadowBuffer.colorTexture
         )
     }
@@ -101,59 +94,6 @@ class RenderLogic : RenderLogic {
             0f, 2f / window.Height, -1f,
             0f, 0f, 1f
         )
-
-    private fun createShaders() {
-        //region Texture shader
-        textureShader = Shader()
-        textureShader.createVertexShader(TextureShader.Path)
-        textureShader.createFragmentShader(TextureShader.Path)
-        textureShader.link()
-        textureShader.bind()
-
-        textureShader.uniforms += TextureShader.viewTransform
-        textureShader.uniforms += TextureShader.worldTransform
-        textureShader.uniforms += TextureShader.depth
-        textureShader.uniforms += TextureShader.spriteTexture
-
-        textureShader.uniforms[TextureShader.viewTransform] = viewMatrix
-        //endregion
-
-        //region Color shader
-        colorShader = Shader()
-        colorShader.createVertexShader(ColorShader.Path)
-        colorShader.createFragmentShader(ColorShader.Path)
-        colorShader.link()
-        colorShader.bind()
-
-        colorShader.uniforms += ColorShader.viewTransform
-        colorShader.uniforms += ColorShader.worldTransform
-        colorShader.uniforms += ColorShader.depth
-
-        colorShader.uniforms[ColorShader.viewTransform] = viewMatrix
-        //endregion
-
-        //region Shadow shader
-        shadowShader = Shader()
-        shadowShader.createVertexShader(ShadowsShader.Path)
-        shadowShader.createFragmentShader(ShadowsShader.Path)
-        shadowShader.link()
-        shadowShader.bind()
-
-        shadowShader.uniforms += ShadowsShader.viewTransform
-        shadowShader.uniforms += ShadowsShader.worldTransform
-
-        //shadowShader.uniforms += ShadowsShader.castLength
-        shadowShader.uniforms += ShadowsShader.lightPos
-        shadowShader.uniforms += ShadowsShader.col
-        shadowShader.uniforms += ShadowsShader.time
-
-        shadowShader.uniforms[ShadowsShader.viewTransform] = viewMatrix * Matrix3x3(
-            1f / shadowDownScale, 0f, 0f,
-            0f, 1f / shadowDownScale, 0f,
-            0f, 0f, 1f
-        )
-        //endregion
-    }
 
     override fun onStart(engine: Engine) {
     }

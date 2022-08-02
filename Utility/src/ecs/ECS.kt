@@ -7,7 +7,7 @@ import java.util.*
 
 class ECS {
     val Components = HashMap<ComponentKey<*>, ArrayList<Component<*>?>>()
-    val Systems = HashSet<System>()
+    val Systems = LinkedHashSet<System>()
 
     private val _entities = ArrayList<Pair<Entity, HashSet<ComponentKey<*>>>>()
     private var _entityID = 0
@@ -93,12 +93,14 @@ class ECS {
 
     inner class Singleton_ internal constructor() {
         val Components = HashMap<ComponentKey<*>, Component<*>>()
+        val Entity = createEntity()
 
         inline operator fun <reified C> get(key: ComponentKey<C>) =
             (Components[key] ?: error("There is no $key component")) as C
 
         operator fun plusAssign(component: Component<*>) {
             Components[component.key] = component
+            this@ECS[Entity] += component
         }
     }
 }

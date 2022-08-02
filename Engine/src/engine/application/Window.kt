@@ -6,6 +6,7 @@ import org.lwjgl.glfw.*
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11C.*
+import org.lwjgl.opengl.GL30C
 import org.lwjgl.system.MemoryUtil
 import java.io.*
 
@@ -213,6 +214,10 @@ class Window(
     }
 
     companion object {
+        fun bind() {
+            GL30C.glBindFramebuffer(GL30C.GL_FRAMEBUFFER, 0)
+        }
+
         val GLMajorVersion = 4
         val GLMinorVersion = 6
 
