@@ -3,18 +3,15 @@ package rythmgame2.common
 import Color
 import ecs.ECS
 import ecs.Entity
-import engine.application.rendering.FrameBuffer
 import engine.application.rendering.Mesh
 import engine.application.rendering.Shader
-import rythmgame2.common.ShadowComp.Companion.getShadowComp
+import rythmgame2.common.ShadowMeshComp.Companion.getShadowMesh
 import util.Vector
 import util.Vector2
 
 fun createWalls(
     ecs: ECS,
-    shadowBuffer: FrameBuffer,
     colorShader: Shader,
-    shadowShader: Shader,
 ): Entity {
     val walls = ecs.createEntity()
 
@@ -55,9 +52,12 @@ fun createWalls(
         Array(18) { Color.rgb(0.5f, 0.5f, 0.5f) } as Array<Vector>
     )
 
-    ecs[walls] += TransformComp(Vector2(50f))
-    ecs[walls] += RenderComp(mesh, colorShader, null)
-    ecs[walls] += getShadowComp(mesh, shadowBuffer, shadowShader)
+    ecs[walls] += TransformComp(
+        Vector2(150f, 80f),
+        0.2f,
+    )
+    ecs[walls] += RenderComp(mesh, 10, colorShader, null)
+    ecs[walls] += getShadowMesh(mesh)
 
     return walls
 }

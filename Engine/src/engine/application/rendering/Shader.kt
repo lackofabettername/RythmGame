@@ -1,5 +1,6 @@
 package engine.application.rendering
 
+import Color
 import engine.console.logging.Log
 import engine.files.FileAccessMode
 import engine.files.FileSystem
@@ -74,7 +75,7 @@ class Shader {
         glCompileShader(shaderID)
 
         check(glGetShaderi(shaderID, GL_COMPILE_STATUS) != 0) {
-            "Error compiling ${_typeNameMap[shaderType]} Shader code: ${
+            "Error compiling ${_typeNameMap[shaderType]} Shader code:\n${
                 glGetShaderInfoLog(shaderID, 1024)
             }"
         }
@@ -114,7 +115,7 @@ class Shader {
 
         glValidateProgram(ID)
         if (glGetProgrami(ID, GL_VALIDATE_STATUS) == 0) {
-            Log.warn("ShaderProgram", "Warning validating Shader code: " + glGetProgramInfoLog(ID, 1024))
+            Log.warn("ShaderProgram", "Warning validating Shader code: " + glGetProgramInfoLog(ID))
         }
     }
 
@@ -169,9 +170,12 @@ class Shader {
             glUniformMatrix4fv(getUniform(uniform), true, value.values)
         }
 
+        operator fun set(uniform: String, color: Color) {
+            glUniform3f(getUniform(uniform), color.red, color.green, color.blue)
+        }
+
         private fun getUniform(uniform: String) =
             _keys[uniform] ?: error("Could not find uniform $uniform")
-
     }
 
     companion object {

@@ -8,6 +8,7 @@ import engine.application.rendering.Texture
 
 open class RenderComp(
     val Mesh: Mesh,
+    val Depth: Int,
     val Shader: Shader,
     val Texture: Texture?,
 ) : Component<RenderComp> {

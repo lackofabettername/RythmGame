@@ -6,4 +6,5 @@ object ColorShader {
 	val Path = "shaders/Color"
 	val viewTransform = "viewTransform"//vert 
 	val worldTransform = "worldTransform"//vert 
+	val depth = "depth"//vert 
 }

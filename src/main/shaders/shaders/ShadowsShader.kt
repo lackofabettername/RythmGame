@@ -7,6 +7,7 @@ object ShadowsShader {
 	val viewTransform = "viewTransform"//vert 
 	val worldTransform = "worldTransform"//vert 
 	val castLength = "castLength"//vert 
-	val lightPos = "lightPos"//vert 
+	val lightPos = "lightPos"//vert frag 
 	val col = "col"//frag 
+	val time = "time"//frag 
 }

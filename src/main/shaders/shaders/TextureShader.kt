@@ -7,4 +7,5 @@ object TextureShader {
 	val viewTransform = "viewTransform"//vert 
 	val worldTransform = "worldTransform"//vert 
 	val spriteTexture = "spriteTexture"//frag 
+	val depth = "depth"//vert 
 }
