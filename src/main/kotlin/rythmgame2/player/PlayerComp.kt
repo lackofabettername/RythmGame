@@ -43,7 +43,7 @@ class PlayerComp(
             )
 
             val texture = FileSystem.openResource("Player.png", FileAccessMode.Read)!!
-                .use { Texture.load(it) }
+                .use { Texture.load2D(it) }
 
             ecs[player] += TransformComp(
                 Vector2(450.0f, 300.0f),
@@ -53,6 +53,7 @@ class PlayerComp(
             ecs[player] += RenderComp(
                 mesh,
                 1,
+                0,
                 texture,
             )
             ecs[player] += PlayerComp(

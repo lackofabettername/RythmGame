@@ -11,9 +11,8 @@ class FrameBuffer(
 ) {
     val ID = glGenFramebuffers()
 
-    val colorTexture by lazy { Texture() }
-    val depthTexture by lazy { Texture() }
-
+    val colorTexture by lazy { Texture(TextureType.Texture2D) }
+    val depthTexture by lazy { Texture(TextureType.Texture2D) }
 
     fun attachColorBuffer() {
         attachBuffer(colorTexture.ID, GL_RGB, GL_COLOR_ATTACHMENT0)
