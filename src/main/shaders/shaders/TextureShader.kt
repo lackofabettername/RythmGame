@@ -8,4 +8,6 @@ object TextureShader {
 	val worldTransform = "worldTransform"//vert 
 	val spriteTexture = "spriteTexture"//frag 
 	val depth = "depth"//vert 
+	val palette = "palette"//frag 
+	val color = "color"//frag 
 }

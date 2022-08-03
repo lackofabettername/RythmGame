@@ -7,8 +7,6 @@ import ecs.System
 import ecs.SystemType
 import engine.application.Window
 import engine.application.rendering.FrameBuffer
-import org.lwjgl.opengl.GL13.GL_TEXTURE0
-import org.lwjgl.opengl.GL13.glActiveTexture
 import rythmgame2.player.PlayerComp
 import shaders.ColorShader
 import shaders.ShadowsShader
@@ -23,6 +21,7 @@ object RenderSysPre : System {
         Window.bind()
     }
 }
+
 object RenderSys : System {
     override val type = SystemType.Render
     override val keys = setOf(TransformComp, RenderComp)
@@ -40,17 +39,19 @@ object RenderSys : System {
         shader.bind()
 
         if (render.Texture == null) {
-            shader.uniforms[TextureShader.worldTransform] = transform.WorldTransform
-            shader.uniforms[TextureShader.depth] = 1 - 1f / render.Depth
+            shader.uniforms[ColorShader.worldTransform] = transform.WorldTransform
+            shader.uniforms[ColorShader.depth] = 1 - 1f / render.Depth
+            shader.uniforms[ColorShader.color] = render.color
         } else {
-            glActiveTexture(GL_TEXTURE0)
-            render.Texture.bind()
+            render.Texture.bind(0)
+            ecs.Singleton[ShaderComp].colorMap.bind(1)
 
             //GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST)
             //GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST)
 
-            shader.uniforms[ColorShader.worldTransform] = transform.WorldTransform
-            shader.uniforms[ColorShader.depth] = 1 - 1f / render.Depth
+            shader.uniforms[TextureShader.worldTransform] = transform.WorldTransform
+            shader.uniforms[TextureShader.depth] = 1 - 1f / render.Depth
+            shader.uniforms[TextureShader.color] = render.color
         }
 
         render.Mesh.render(shader)

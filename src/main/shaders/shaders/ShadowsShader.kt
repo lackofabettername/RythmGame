@@ -9,5 +9,5 @@ object ShadowsShader {
 	val castLength = "castLength"//vert 
 	val lightPos = "lightPos"//vert frag 
 	val col = "col"//frag 
-	val time = "time"//frag 
+	val time = "time"//frag vert 
 }

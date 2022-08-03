@@ -47,14 +47,14 @@ fun createWalls(
             360f, 150f,
             360f, 170f,
         ) as Array<Vector>,
-        Array(18) { Color.rgb(0.5f, 0.5f, 0.5f) } as Array<Vector>
+        Array(18) { Color.rgb(0.0f, 0.0f, 0.0f) } as Array<Vector>
     )
 
     ecs[walls] += TransformComp(
         Vector2(150f, 80f),
         0.2f,
     )
-    ecs[walls] += RenderComp(mesh, 10, null)
+    ecs[walls] += RenderComp(mesh, 10, 5, null)
     ecs[walls] += getShadowMesh(mesh)
 
     return walls

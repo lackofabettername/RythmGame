@@ -5,6 +5,8 @@ import ecs.ComponentKey
 import engine.application.rendering.Mesh
 import engine.application.rendering.Shader
 import engine.application.rendering.Texture
+import engine.files.FileAccessMode
+import engine.files.FileSystem
 import shaders.ColorShader
 import shaders.ShadowsShader
 import shaders.TextureShader
@@ -13,6 +15,7 @@ import util.Matrix3x3
 class RenderComp(
     val Mesh: Mesh,
     val Depth: Int,
+    val color: Int,
     val Texture: Texture?,
 ) : Component<RenderComp> {
     companion object : ComponentKey<RenderComp>
@@ -27,6 +30,8 @@ class ShaderComp(
     val texture = Shader()
     val color = Shader()
     val shadow = Shader()
+    val colorMap = FileSystem.openResource("Palette.png", FileAccessMode.Read)!!
+        .use { Texture.load1D(it) }
 
     init {
         //region Texture shader
@@ -38,7 +43,12 @@ class ShaderComp(
         texture.uniforms += TextureShader.viewTransform
         texture.uniforms += TextureShader.worldTransform
         texture.uniforms += TextureShader.depth
+        texture.uniforms += TextureShader.color
+
         texture.uniforms += TextureShader.spriteTexture
+        texture.uniforms += TextureShader.palette
+        texture.uniforms[TextureShader.spriteTexture] = 0
+        texture.uniforms[TextureShader.palette] = 1
 
         texture.uniforms[TextureShader.viewTransform] = viewMatrix
         //endregion
@@ -52,6 +62,10 @@ class ShaderComp(
         color.uniforms += ColorShader.viewTransform
         color.uniforms += ColorShader.worldTransform
         color.uniforms += ColorShader.depth
+        color.uniforms += ColorShader.color
+
+        texture.uniforms += TextureShader.palette
+        texture.uniforms[TextureShader.palette] = 1
 
         color.uniforms[ColorShader.viewTransform] = viewMatrix
         //endregion

@@ -4,6 +4,10 @@ in vec2 textureCoord;
 
 uniform sampler2D spriteTexture;
 
+uniform int color;
+uniform sampler1D palette;
+#define paletteWidth (float(textureSize(palette, 0))-1)
+
 out vec4 fragColor;
 
 #define dither 4
@@ -32,14 +36,8 @@ const float dithering[16] = float[](
 #endif
 
 void main() {
-    //#F21B3F
-    vec3 col1 = vec3(0.9453125, 0.10546875, 0.24609375);
-    vec3 col2 = vec3(0.796875, 0.98046875, 0.9921875);
-    vec3 alphaSrc = texture(spriteTexture, textureCoord, 0).rgb;
-
-    vec3 col = (col1*alphaSrc.rrr + col2*alphaSrc.ggg) / dot(alphaSrc.rgb, vec3(1));
-
-    float alpha = max(max(alphaSrc.r, alphaSrc.g), alphaSrc.b);
+    vec3 col = texture(palette, color / paletteWidth).rgb;
+    float alpha = texture(spriteTexture, textureCoord, 0).r;
 
     #ifdef dither
     int ind = int(dot(mod(gl_FragCoord.xy, dither), vec2(1, dither)));
@@ -48,7 +46,7 @@ void main() {
     } else {
         alpha = 1;
     }
-    #endif
+        #endif
 
     fragColor = vec4(col, alpha);
 }

@@ -9,8 +9,6 @@ uniform float time;
 
 out vec4 FragColor;
 
-const float f = 0.5001;
-
 float mod289(float x){ return x - floor(x * (1.0 / 289.0)) * 289.0; }
 vec4 mod289(vec4 x){ return x - floor(x * (1.0 / 289.0)) * 289.0; }
 vec4 perm(vec4 x){ return mod289(((x * 34.0) + 1.0) * x); }
@@ -53,6 +51,7 @@ void main() {
     //FragColor = vec4(col*f + vec3(gl_FragCoord.z * (1.-f)), 1.0);
     //FragColor = vec4(col * vec3(1. - gl_FragCoord.z), 1.0);
 
+    //Magic numbers™
     gl_FragDepth = 1.0 - vertCol.r * snoise(gl_FragCoord.xy * 0.06);
     FragColor = vec4(col * vertCol * mix(0.9, 1.1, snoise(gl_FragCoord.xy * 0.1)), 1);
 }

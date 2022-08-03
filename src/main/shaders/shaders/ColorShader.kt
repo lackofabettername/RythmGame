@@ -7,4 +7,6 @@ object ColorShader {
 	val viewTransform = "viewTransform"//vert 
 	val worldTransform = "worldTransform"//vert 
 	val depth = "depth"//vert 
+	val color = "color"//frag 
+	val palette = "palette"//frag 
 }

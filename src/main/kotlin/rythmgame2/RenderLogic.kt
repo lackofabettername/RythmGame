@@ -84,6 +84,7 @@ class RenderLogic : RenderLogic {
                 ) as Array<Vector>,
             ),
             20,
+            4,
             shadowBuffer.colorTexture
         )
     }
