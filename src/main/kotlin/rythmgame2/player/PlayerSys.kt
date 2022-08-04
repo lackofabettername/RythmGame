@@ -6,7 +6,6 @@ import ecs.System
 import rythmgame2.common.InputComp
 import rythmgame2.common.TransformComp
 import util.Vector2
-import kotlin.math.PI
 
 object PlayerSys : System {
     override val keys = setOf(PlayerComp, TransformComp)
@@ -31,7 +30,7 @@ object PlayerSys : System {
             move.magnitude = 10f
 
             transform.Pos += move
-            transform.Rot = move.heading - PI.toFloat() / 2
+            transform.Rot = move.heading
         }
     }
 }

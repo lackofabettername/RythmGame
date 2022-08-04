@@ -6,7 +6,7 @@ uniform sampler2D spriteTexture;
 
 uniform int color;
 uniform sampler1D palette;
-#define paletteWidth (float(textureSize(palette, 0))-1)
+#define paletteWidth float(textureSize(palette, 0))
 
 out vec4 fragColor;
 
@@ -36,7 +36,7 @@ const float dithering[16] = float[](
 #endif
 
 void main() {
-    vec3 col = texture(palette, color / paletteWidth).rgb;
+    vec3 col = texture(palette, (color+.5) / paletteWidth).rgb;
     float alpha = texture(spriteTexture, textureCoord, 0).r;
 
     #ifdef dither

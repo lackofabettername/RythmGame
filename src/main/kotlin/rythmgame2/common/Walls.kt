@@ -52,7 +52,6 @@ fun createWalls(
 
     ecs[walls] += TransformComp(
         Vector2(150f, 80f),
-        0.2f,
     )
     ecs[walls] += RenderComp(mesh, 10, 5, null)
     ecs[walls] += getShadowMesh(mesh)
