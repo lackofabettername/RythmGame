@@ -5,5 +5,6 @@ enum class PlayerInput {
     Left,
     Down,
     Right,
-    Shoot
+    Shoot,
+    Dash
 }

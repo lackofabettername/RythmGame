@@ -3,13 +3,15 @@ package rythmgame2.common
 import ecs.ECS
 import ecs.Entity
 import ecs.System
+import ecs.SystemType
 
 object MoveSys : System {
-    override val keys = setOf(TransformComp, VelComp)
+    override val type = SystemType.Update
+    override val keys = setOf(TransformComp, VelocityComp)
 
     override fun invoke(ecs: ECS, entity: Entity) {
         val pos = ecs[entity, TransformComp].Pos
-        val vel = ecs[entity, VelComp]
+        val vel = ecs[entity, VelocityComp]
 
         pos += vel.vel
         vel.vel *= vel.friction
@@ -17,10 +19,11 @@ object MoveSys : System {
 }
 
 object AccelerateSys : System {
-    override val keys = setOf(VelComp, AccComp)
+    override val type = SystemType.Update
+    override val keys = setOf(VelocityComp, AccComp)
 
     override fun invoke(ecs: ECS, entity: Entity) {
-        val vel = ecs[entity, VelComp].vel
+        val vel = ecs[entity, VelocityComp].vel
         val force = ecs[entity, AccComp].force
         val acc = ecs[entity, AccComp].acc
 

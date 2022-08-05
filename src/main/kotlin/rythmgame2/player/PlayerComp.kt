@@ -11,13 +11,16 @@ import engine.files.FileAccessMode
 import engine.files.FileSystem
 import rythmgame2.common.RenderComp
 import rythmgame2.common.TransformComp
+import rythmgame2.common.VelocityComp
 import util.Vector
 import util.Vector2
 import util.times
 
 class PlayerComp(
-    val keyBinds: HashMap<Key, PlayerInput>
+    val keyBinds: HashMap<Key, PlayerInput>,
 ) : Component<PlayerComp> {
+    var dashing = 0
+
     override val key = PlayerComp
 
     companion object : ComponentKey<PlayerComp> {
@@ -50,6 +53,7 @@ class PlayerComp(
                 0.0f,
                 Vector2(1f)
             )
+            ecs[player] += VelocityComp(Vector2(), 0.4f)
             ecs[player] += RenderComp(
                 mesh,
                 1,
@@ -62,6 +66,7 @@ class PlayerComp(
                     Key.A to PlayerInput.Left,
                     Key.S to PlayerInput.Down,
                     Key.D to PlayerInput.Right,
+                    Key.LShift to PlayerInput.Dash,
                 )
             )
 

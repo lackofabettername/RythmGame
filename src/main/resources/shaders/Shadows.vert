@@ -52,7 +52,7 @@ void main() {
         vec2 dir = pos.xy - light;
 
         float ang = noise(vec3(lightPos*0.01, gl_VertexID + time)) * PI;
-        dir += vec2(cos(ang), sin(ang)) * 3;
+        dir += vec2(cos(ang), sin(ang)) * 9;
 
         dir = normalize(dir);
 

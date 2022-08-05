@@ -28,13 +28,13 @@ class TransformComp(
     override val key = TransformComp
 }
 
-class VelComp(
-    val vel: Vector2,
+class VelocityComp(
+    val vel: Vector2 = Vector2(),
     var friction: Float = 1f
-) : Component<VelComp> {
-    companion object : ComponentKey<VelComp>
+) : Component<VelocityComp> {
+    companion object : ComponentKey<VelocityComp>
 
-    override val key = VelComp
+    override val key = VelocityComp
 }
 
 class AccComp(

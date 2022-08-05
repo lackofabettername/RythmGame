@@ -1,5 +1,6 @@
 package ecs
 
+import misc.NTuple4
 import java.util.*
 
 //https://www.david-colson.com/2020/02/09/making-a-simple-ecs.html
@@ -15,9 +16,56 @@ class ECS {
 
     val Singleton = Singleton_()
 
+    //region Get Entity Component
     inline operator fun <reified C : Component<C>> get(
-        entity: Entity, componentType: ComponentKey<C>
-    ) = Components[componentType]?.get(entity.ind) as C
+        entity: Entity, component: ComponentKey<C>
+    ) = Components[component]?.get(entity.ind) as C
+
+    inline operator fun <
+            reified C1 : Component<C1>,
+            reified C2 : Component<C2>,
+            > get(
+        entity: Entity,
+        component1: ComponentKey<C1>,
+        component2: ComponentKey<C2>,
+    ) = Pair(
+        Components[component1]?.get(entity.ind) as C1,
+        Components[component2]?.get(entity.ind) as C2,
+    )
+
+    inline operator fun <
+            reified C1 : Component<C1>,
+            reified C2 : Component<C2>,
+            reified C3 : Component<C3>,
+            > get(
+        entity: Entity,
+        component1: ComponentKey<C1>,
+        component2: ComponentKey<C2>,
+        component3: ComponentKey<C3>,
+    ) = Triple(
+        Components[component1]?.get(entity.ind) as C1,
+        Components[component2]?.get(entity.ind) as C2,
+        Components[component3]?.get(entity.ind) as C3,
+    )
+
+    inline operator fun <
+            reified C1 : Component<C1>,
+            reified C2 : Component<C2>,
+            reified C3 : Component<C3>,
+            reified C4 : Component<C4>,
+            > get(
+        entity: Entity,
+        component1: ComponentKey<C1>,
+        component2: ComponentKey<C2>,
+        component3: ComponentKey<C3>,
+        component4: ComponentKey<C4>,
+    ) = NTuple4(
+        Components[component1]?.get(entity.ind) as C1,
+        Components[component2]?.get(entity.ind) as C2,
+        Components[component3]?.get(entity.ind) as C3,
+        Components[component4]?.get(entity.ind) as C4,
+    )
+    //endregion
 
     fun update(type: SystemType) {
         for (system in Systems.filter { it.type == type }) {

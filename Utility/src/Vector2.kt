@@ -326,9 +326,7 @@ class Vector2(
         return set(0f, 0f)
     }
 
-    fun copy(): Vector2 {
-        return Vector2(this.x, this.y)
-    }
+    val copy get() = Vector2(this.x, this.y)
 
     override fun equals(other: Any?): Boolean {
         if (other !is Vector2) return false
@@ -351,8 +349,8 @@ class Vector2(
     //endregion
 
     companion object {
-        val MAX_VALUE by lazy { Vector2(+Float.MAX_VALUE, +Float.MAX_VALUE) }
-        val MIN_VALUE by lazy { Vector2(-Float.MAX_VALUE, -Float.MAX_VALUE) }
+        val MAX_VALUE = Vector2(+Float.MAX_VALUE, +Float.MAX_VALUE)
+        val MIN_VALUE = Vector2(-Float.MAX_VALUE, -Float.MAX_VALUE)
 
         //region Constructor
         fun random(rng: Random, magnitude: Float): Vector2 {
@@ -422,7 +420,7 @@ class Vector2(
 
         fun max(vararg vectors: Vector2): Vector2 {
             require(vectors.isNotEmpty()) { "There must be more than 0 Vectors" }
-            val result = MIN_VALUE.copy()
+            val result = MIN_VALUE.copy
             for (v in vectors) {
                 result.x.coerceAtLeast(v.x)
                 result.y.coerceAtLeast(v.y)
@@ -446,7 +444,7 @@ class Vector2(
 
         fun min(vararg vectors: Vector2): Vector2 {
             require(vectors.isNotEmpty()) { "There must be more than 0 Vectors" }
-            val result = MAX_VALUE.copy()
+            val result = MAX_VALUE.copy
             for (v in vectors) {
                 result.x.coerceAtMost(v.x)
                 result.y.coerceAtMost(v.y)

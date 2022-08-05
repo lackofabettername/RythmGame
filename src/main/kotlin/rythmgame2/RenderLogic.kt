@@ -51,7 +51,12 @@ class RenderLogic : RenderLogic {
         ecs.Singleton += shaders
         ecs.Singleton += shadows
 
+        ecs.Systems += LifeSys
+
         ecs.Systems += PlayerSys
+        ecs.Systems += MoveSys
+
+        ecs.Systems += SpeedSmearSys
 
         ecs.Systems += ShadowSysPre
         ecs.Systems += ShadowSys
