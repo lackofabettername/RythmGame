@@ -14,9 +14,14 @@ import org.lwjgl.opengl.GL11.*
 import rythmgame2.common.*
 import rythmgame2.player.PlayerComp.Companion.createPlayer
 import rythmgame2.player.PlayerSys
+import rythmgame2.walls.MarchingSquares
 import space.Matrix3x3
 import space.Vector
 import space.Vector2
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.sin
+import kotlin.random.Random
 
 class RenderLogic : RenderLogic {
     lateinit var window: Window
@@ -41,6 +46,19 @@ class RenderLogic : RenderLogic {
     val walls by lazy { createWalls(ecs) }
     val temp = ecs.createEntity()
 
+    val ms = MarchingSquares(
+        map2(20, 20) { (x, y) ->
+            if (min(x, y) == 0 || max(x, y)+1 == 20) {
+                0f
+            } else {
+                (x / 20f) +
+                        (sin(y * 0.4f) * .2f) +
+                        (Random.nextFloat() - .5f) * 0.1f
+            }
+        },
+        0.5f
+    )
+
     override fun initialize(window: Window) {
         this.window = window
 
@@ -59,8 +77,8 @@ class RenderLogic : RenderLogic {
 
         ecs.Systems += SpeedSmearSys
 
-        ecs.Systems += ShadowSysPre
-        ecs.Systems += ShadowSys
+        //ecs.Systems += ShadowSysPre
+        //ecs.Systems += ShadowSys
 
         ecs.Systems += RenderSysPre
         ecs.Systems += RenderSys
@@ -92,6 +110,21 @@ class RenderLogic : RenderLogic {
             20,
             4,
             shadowBuffer.colorTexture
+        )
+
+        ms.updateEdges()
+        val msEntity = ecs.createEntity()
+        ecs[msEntity] += TransformComp(Vector2(450f, 300f), 0f, Vector2(15f))
+        ecs[msEntity] += RenderComp(
+            Mesh(
+                Mesh.Lines,
+                Mesh.StaticDraw,
+                ms.edges.flatMap { it.toList() }.toTypedArray()
+                        as Array<Vector>,
+            ),
+            5,
+            1,
+            null
         )
     }
 
