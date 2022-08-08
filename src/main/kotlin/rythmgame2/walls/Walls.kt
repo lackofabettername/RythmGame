@@ -4,7 +4,6 @@ import Color
 import ecs.ECS
 import ecs.Entity
 import engine.application.rendering.Mesh
-import rythmgame2.common.ShadowMeshComp.Companion.getShadowMesh
 import util.Vector
 import util.Vector2
 
@@ -54,7 +53,7 @@ fun createWalls(
         Vector2(150f, 80f),
     )
     ecs[walls] += RenderComp(mesh, 10, 5, null)
-    ecs[walls] += getShadowMesh(mesh)
+    ecs[walls] += ShadowComp()
 
     return walls
 }

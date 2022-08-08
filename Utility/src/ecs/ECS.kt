@@ -133,6 +133,8 @@ class ECS {
             components[ind] = null
             _entities[ind].second -= component
         }
+
+        operator fun contains(component: ComponentKey<*>) = component in _entities[ind].second
     }
 
     @Suppress("NOTHING_TO_INLINE")

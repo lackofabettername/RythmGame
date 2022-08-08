@@ -34,7 +34,7 @@ class RenderLogic : RenderLogic {
         buffer.verify()
         buffer
     }
-    val shadows by lazy { ShadowComp(shadowBuffer) }
+    val shadows by lazy { ShadowBufferComp(shadowBuffer) }
 
     val player by lazy { createPlayer(ecs) }
     val walls by lazy { createWalls(ecs) }

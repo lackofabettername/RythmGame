@@ -51,7 +51,7 @@ class PlayerComp(
             ecs[player] += TransformComp(
                 Vector2(450.0f, 300.0f),
                 0.0f,
-                Vector2(1f)
+                Vector2(0.5f)
             )
             ecs[player] += VelocityComp(Vector2(), 0.4f)
             ecs[player] += RenderComp(

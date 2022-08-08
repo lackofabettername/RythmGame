@@ -60,10 +60,10 @@ object RenderSys : System {
 
 object ShadowSysPre : System {
     override val type = SystemType.Render
-    override val keys = setOf(ShadowComp)
+    override val keys = setOf(ShadowBufferComp)
 
     override fun invoke(ecs: ECS, entity: Entity) {
-        val buffer = ecs.Singleton[ShadowComp].Buffer
+        val buffer = ecs.Singleton[ShadowBufferComp].Buffer
         buffer.bind()
         buffer.setClearColor(0.0f, 0f, 0f, 1f)
         buffer.clear(FrameBuffer.ColorBuffer or FrameBuffer.DepthBuffer)
@@ -76,20 +76,21 @@ object ShadowSysPre : System {
 
 object ShadowSys : System {
     override val type = SystemType.Render
-    override val keys = setOf(TransformComp, ShadowMeshComp)
+    override val keys = setOf(TransformComp, RenderComp, ShadowComp)
 
     override fun invoke(ecs: ECS, entity: Entity) {
-        val transform = ecs[entity, TransformComp]
-        val mesh = ecs[entity, ShadowMeshComp].Mesh
+        val (mesh, transform) = ecs[entity, RenderComp, TransformComp]
 
         val lights = ecs[TransformComp, PlayerComp]
 
         val shader = ecs.Singleton[ShaderComp].shadow
         shader.uniforms[ShadowsShader.worldTransform] = transform.WorldTransform
         shader.uniforms[ShadowsShader.lightPos] = ecs[lights.first(), TransformComp].Pos
-        //shader.uniforms[ShadowsShader.castLength] = 300f
         shader.uniforms[ShadowsShader.col] = Color.rgb(1f, 1f, 1f)
 
-        mesh.render(shader)
+        repeat(6) { pass ->
+            shader.uniforms[ShadowsShader.pass] = pass
+            mesh.Mesh.render(shader)
+        }
     }
 }

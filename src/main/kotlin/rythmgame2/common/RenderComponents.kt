@@ -79,9 +79,10 @@ class ShaderComp(
         shadow.uniforms += ShadowsShader.viewTransform
         shadow.uniforms += ShadowsShader.worldTransform
 
-        //shadowShader.uniforms += ShadowsShader.castLength
         shadow.uniforms += ShadowsShader.lightPos
         shadow.uniforms += ShadowsShader.col
+        shadow.uniforms += ShadowsShader.pass
+
         shadow.uniforms += ShadowsShader.time
 
         shadow.uniforms[ShadowsShader.viewTransform] = viewMatrix * Matrix3x3(

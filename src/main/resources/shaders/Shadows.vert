@@ -1,15 +1,17 @@
 #version 330 core
 
 #define PI 3.14159265359
+#define ID (gl_VertexID % 3)
 
 layout (location = 0) in vec2 inPos;
 
 uniform mat3 viewTransform;
 uniform mat3 worldTransform;
 
-uniform float castLength;
 uniform vec2 lightPos;
 uniform float time;
+
+uniform int pass;
 
 out vec3 vertCol;
 out float vertID;
@@ -48,7 +50,8 @@ void main() {
 
     vertCol = vec3(1.0, 0.0, 0.0);
 
-    if (gl_VertexID % 3 == 0 || gl_VertexID % 6 == 4) {
+    //if (gl_VertexID % 3 == 0 || gl_VertexID % 6 == 4) {
+    if (ID == (pass / 2) || ID == (pass / 2) + (pass % 2)) {
         vec2 dir = pos.xy - light;
 
         float ang = noise(vec3(lightPos*0.01, gl_VertexID + time)) * PI;
