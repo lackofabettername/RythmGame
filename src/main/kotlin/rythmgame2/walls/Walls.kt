@@ -1,6 +1,6 @@
 package rythmgame2.common
 
-import Color
+import data.Color
 import ecs.ECS
 import ecs.Entity
 import engine.application.rendering.Mesh

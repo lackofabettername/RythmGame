@@ -1,6 +1,6 @@
 package engine.application
 
-import Color
+import data.Color
 import engine.console.logging.Log
 import org.lwjgl.glfw.*
 import org.lwjgl.glfw.GLFW.*

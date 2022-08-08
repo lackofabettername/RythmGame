@@ -19,13 +19,14 @@ class Vector2(
 
     constructor (value: Float) : this(x = value, y = value)
 
-    override fun getDimension() = 2
+    override val Dimension get() = 2
     //endregion
 
     //region Conversion
-    fun toFloatArray(): FloatArray {
-        return floatArrayOf(x, y)
-    }
+    val floatArray get() = floatArrayOf(x, y)
+
+    operator fun component1() = x
+    operator fun component2() = y
     //endregion
 
     //region Operations
@@ -173,8 +174,7 @@ class Vector2(
     //endregion
 
     override operator fun get(axis: Int): Float {
-        require(axis in 0..1)
-        return when (axis) {
+        return when (axis % 2) {
             0 -> x
             1 -> y
             else -> 0f
@@ -182,8 +182,7 @@ class Vector2(
     }
 
     operator fun set(axis: Int, value: Float) {
-        require(axis in 0..1)
-        when (axis) {
+        when (axis % 2) {
             0 -> x = value
             1 -> y = value
         }
@@ -195,17 +194,15 @@ class Vector2(
         return this
     }
 
-    fun constrain(min: Vector2, max: Vector2): Vector2 {
-        x.coerceIn(min.x, max.x)
-        y.coerceIn(min.y, max.y)
-        return this
-    }
+    fun coerceIn(min: Vector2, max: Vector2) = Vector2(
+        x.coerceIn(min.x, max.x),
+        y.coerceIn(min.y, max.y),
+    )
 
-    fun constrain(minX: Float, minY: Float, maxX: Float, maxY: Float): Vector2 {
-        x.coerceIn(minX, maxX)
-        y.coerceIn(minY, maxY)
-        return this
-    }
+    fun coerceIn(minX: Float, minY: Float, maxX: Float, maxY: Float) = Vector2(
+        x.coerceIn(minX, maxX),
+        y.coerceIn(minY, maxY),
+    )
 
     fun wrap(minX: Float, minY: Float, maxX: Float, maxY: Float): Vector2 {
         while (x > maxX) x -= maxX - minX
@@ -316,17 +313,13 @@ class Vector2(
         return v
     }
 
-    fun set(x: Float, y: Float): Vector2 {
-        this.x = x
-        this.y = y
-        return this
-    }
+    val copy get() = Vector2(this.x, this.y)
 
     fun clear(): Vector2 {
-        return set(0f, 0f)
+        x = 0f
+        y = 0f
+        return this
     }
-
-    val copy get() = Vector2(this.x, this.y)
 
     override fun equals(other: Any?): Boolean {
         if (other !is Vector2) return false
@@ -380,10 +373,6 @@ class Vector2(
             .toTypedArray()
         //endregion
 
-        fun toFloatArray(v: Vector2): FloatArray {
-            return floatArrayOf(v.x, v.y)
-        }
-
         fun lerp(amount: Float, a: Vector2, b: Vector2): Vector2 {
             return Vector2(
                 a.x * (1f - amount) + b.x * amount,
@@ -398,14 +387,6 @@ class Vector2(
             while (result.y > maxY) result.y -= maxY - minY
             while (result.y < minY) result.y += maxY - minY
             return result
-        }
-
-        fun constrain(v: Vector2, minX: Float, minY: Float, maxX: Float, maxY: Float): Vector2 {
-            return min(max(v, minX, minY), maxX, maxY)
-        }
-
-        fun constrain(v: Vector2, min: Vector2, max: Vector2): Vector2 {
-            return min(max(v, min), max)
         }
 
         fun sum(vararg vectors: Vector2): Vector2 {
@@ -464,10 +445,6 @@ class Vector2(
                 min(v.x, x),
                 min(v.y, y),
             )
-        }
-
-        fun about(a: Vector2, b: Vector2, epsilon: Float): Boolean {
-            return (a - b).magnitudeSqr < epsilon * epsilon
         }
     }
 }

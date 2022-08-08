@@ -23,7 +23,7 @@ class Vector3(
 
     constructor (value: Float) : this(x = value, y = value, z = value)
 
-    override fun getDimension() = 3
+    override val Dimension get() = 3
 
     //endregion
 

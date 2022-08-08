@@ -5,6 +5,7 @@ import ecs.ComponentKey
 import engine.application.rendering.Mesh
 import engine.application.rendering.Shader
 import engine.application.rendering.Texture
+import engine.console.logging.Log
 import engine.files.FileAccessMode
 import engine.files.FileSystem
 import shaders.ColorShader
@@ -35,6 +36,9 @@ class ShaderComp(
 
     init {
         //region Texture shader
+        Log.debug("Application", "Initializing Texture shader.")
+        Log.Indent++
+
         texture.createVertexShader(TextureShader.Path)
         texture.createFragmentShader(TextureShader.Path)
         texture.link()
@@ -51,9 +55,14 @@ class ShaderComp(
         texture.uniforms[TextureShader.palette] = 1
 
         texture.uniforms[TextureShader.viewTransform] = viewMatrix
+
+        Log.Indent--
         //endregion
 
         //region Color shader
+        Log.debug("Application", "Initializing Color shader.")
+        Log.Indent++
+
         color.createVertexShader(ColorShader.Path)
         color.createFragmentShader(ColorShader.Path)
         color.link()
@@ -68,9 +77,14 @@ class ShaderComp(
         texture.uniforms[TextureShader.palette] = 1
 
         color.uniforms[ColorShader.viewTransform] = viewMatrix
+
+        Log.Indent--
         //endregion
 
         //region Shadow shader
+        Log.debug("Application", "Initializing Shadow shader.")
+        Log.Indent++
+
         shadow.createVertexShader(ShadowsShader.Path)
         shadow.createFragmentShader(ShadowsShader.Path)
         shadow.link()
@@ -90,6 +104,8 @@ class ShaderComp(
             0f, 1f / shadowDownscale, 0f,
             0f, 0f, 1f
         )
+
+        Log.Indent--
         //endregion
     }
 

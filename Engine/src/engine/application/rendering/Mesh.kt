@@ -50,13 +50,13 @@ class Mesh(
     init {
         ComponentCount = VertexData.size
         VertexCount = VertexData[0].size
-        VertexSize = VertexData.fold(0) { acum, elem -> acum + elem[0].getDimension() }
+        VertexSize = VertexData.fold(0) { acum, elem -> acum + elem[0].Dimension }
 
         rawVertexData = FloatArray(VertexCount * VertexSize)
         var ind = 0
         for (vertex in 0 until VertexCount) {
             for (component in 0 until ComponentCount) {
-                for (element in 0 until VertexData[component][0].getDimension()) {
+                for (element in 0 until VertexData[component][0].Dimension) {
                     rawVertexData[ind++] = VertexData[component][vertex][element]
                 }
             }
@@ -76,7 +76,7 @@ class Mesh(
 
             ind = 0
             for (i in 0 until ComponentCount) {
-                val componentSize: Int = VertexData[i][0].getDimension()
+                val componentSize: Int = VertexData[i][0].Dimension
 
                 glEnableVertexAttribArray(i)
                 glVertexAttribPointer(
@@ -112,7 +112,7 @@ class Mesh(
         var ind = offset
 
         for (component in 0 until ComponentCount) {
-            for (element in 0 until VertexData[component][0].getDimension()) {
+            for (element in 0 until VertexData[component][0].Dimension) {
                 rawVertexData[ind++] = value[component][element]
             }
         }

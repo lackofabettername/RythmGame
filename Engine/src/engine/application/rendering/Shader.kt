@@ -1,7 +1,8 @@
 package engine.application.rendering
 
-import Color
+import data.Color
 import engine.console.logging.Log
+import engine.console.logging.style.Font
 import engine.files.FileAccessMode
 import engine.files.FileSystem
 import misc.use
@@ -9,7 +10,6 @@ import org.lwjgl.opengl.GL20C.*
 import org.lwjgl.opengl.GL32.GL_GEOMETRY_SHADER
 import space.Matrix3x3
 import space.Matrix4x4
-
 import space.Vector2
 import space.Vector3
 
@@ -115,7 +115,7 @@ class Shader {
 
         glValidateProgram(ID)
         if (glGetProgrami(ID, GL_VALIDATE_STATUS) == 0) {
-            Log.warn("ShaderProgram", "Warning validating Shader code: " + glGetProgramInfoLog(ID))
+            Log.warn("ShaderProgram", "Warning validating Shader code:\n${Font.Italics}" + glGetProgramInfoLog(ID))
         }
     }
 

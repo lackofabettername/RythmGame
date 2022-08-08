@@ -1,3 +1,5 @@
+package data
+
 import space.Vector
 import java.io.Serializable
 import kotlin.math.abs
@@ -25,9 +27,7 @@ class Color private constructor(
         }
 
 
-    override fun getDimension(): Int {
-        return 4
-    }
+    override val Dimension get() = 4
 
     override fun get(axis: Int): Float {
         return when (axis) {

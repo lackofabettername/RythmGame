@@ -1,6 +1,7 @@
 package rythmgame2
 
-import Color
+import data.Color
+import data.Map2.Companion.map2
 import ecs.ECS
 import ecs.SystemType
 import engine.Engine
