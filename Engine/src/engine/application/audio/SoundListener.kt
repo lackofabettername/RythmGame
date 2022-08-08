@@ -1,7 +1,7 @@
 package engine.application.audio
 
 import org.lwjgl.openal.AL10.*
-import util.Vector3
+import space.Vector3
 
 class SoundListener @JvmOverloads constructor(position: Vector3 = Vector3()) {
     init {

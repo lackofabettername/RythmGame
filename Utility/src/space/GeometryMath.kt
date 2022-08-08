@@ -1,4 +1,4 @@
-package util
+package space
 
 object GeometryMath {
     /**

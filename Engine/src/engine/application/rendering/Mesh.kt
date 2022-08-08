@@ -4,7 +4,7 @@ import org.lwjgl.opengl.GL11C
 import org.lwjgl.opengl.GL15C
 import org.lwjgl.opengl.GL30C.*
 import org.lwjgl.system.MemoryUtil
-import util.Vector
+import space.Vector
 import java.lang.Float
 import java.nio.FloatBuffer
 import kotlin.Array

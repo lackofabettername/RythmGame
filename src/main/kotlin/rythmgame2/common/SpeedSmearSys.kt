@@ -6,8 +6,8 @@ import ecs.Entity
 import ecs.System
 import ecs.SystemType
 import engine.application.rendering.Mesh
-import util.Vector
-import util.Vector2
+import space.Vector
+import space.Vector2
 
 object SpeedSmearSys : System {
     override val type = SystemType.Update

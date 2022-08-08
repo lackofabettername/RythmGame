@@ -10,7 +10,7 @@ import engine.files.FileSystem
 import shaders.ColorShader
 import shaders.ShadowsShader
 import shaders.TextureShader
-import util.Matrix3x3
+import space.Matrix3x3
 
 class RenderComp(
     val Mesh: Mesh,

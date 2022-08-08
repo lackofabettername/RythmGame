@@ -4,8 +4,8 @@ import Color
 import ecs.ECS
 import ecs.Entity
 import engine.application.rendering.Mesh
-import util.Vector
-import util.Vector2
+import space.Vector
+import space.Vector2
 
 fun createWalls(
     ecs: ECS

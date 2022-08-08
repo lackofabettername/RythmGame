@@ -1,4 +1,4 @@
-package util
+package space
 
 import java.io.Serializable
 import kotlin.math.*
@@ -430,15 +430,15 @@ class Vector2(
 
         fun max(v: Vector2, x: Float, y: Float): Vector2 {
             return Vector2(
-                kotlin.math.max(v.x, x),
-                kotlin.math.max(v.y, y),
+                max(v.x, x),
+                max(v.y, y),
             )
         }
 
         fun max(x: Float, y: Float, v: Vector2): Vector2 {
             return Vector2(
-                kotlin.math.max(v.x, x),
-                kotlin.math.max(v.y, y),
+                max(v.x, x),
+                max(v.y, y),
             )
         }
 
@@ -454,15 +454,15 @@ class Vector2(
 
         fun min(v: Vector2, x: Float, y: Float): Vector2 {
             return Vector2(
-                kotlin.math.min(v.x, x),
-                kotlin.math.min(v.y, y),
+                min(v.x, x),
+                min(v.y, y),
             )
         }
 
         fun min(x: Float, y: Float, v: Vector2): Vector2 {
             return Vector2(
-                kotlin.math.min(v.x, x),
-                kotlin.math.min(v.y, y),
+                min(v.x, x),
+                min(v.y, y),
             )
         }
 

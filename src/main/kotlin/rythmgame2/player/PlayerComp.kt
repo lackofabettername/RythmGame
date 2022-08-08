@@ -12,9 +12,9 @@ import engine.files.FileSystem
 import rythmgame2.common.RenderComp
 import rythmgame2.common.TransformComp
 import rythmgame2.common.VelocityComp
-import util.Vector
-import util.Vector2
-import util.times
+import space.Vector
+import space.Vector2
+import space.times
 
 class PlayerComp(
     val keyBinds: HashMap<Key, PlayerInput>,

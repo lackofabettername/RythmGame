@@ -3,7 +3,7 @@ package engine.application.audio
 import org.lwjgl.openal.AL10.*
 import org.lwjgl.openal.AL11.AL_SAMPLE_OFFSET
 import org.lwjgl.openal.AL11.AL_SEC_OFFSET
-import util.Vector3
+import space.Vector3
 import javax.naming.OperationNotSupportedException
 
 class SoundSource(loop: Boolean, relative: Boolean) {

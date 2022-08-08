@@ -3,7 +3,7 @@ package rythmgame2.common
 import ecs.Component
 import ecs.ComponentKey
 import engine.application.events.Key
-import util.Vector2
+import space.Vector2
 
 
 class InputComp : Component<InputComp> {

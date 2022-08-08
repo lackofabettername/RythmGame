@@ -1,6 +1,6 @@
 @file:Suppress("unused")
 
-package util
+package space
 
 import kotlin.math.max
 import kotlin.math.min

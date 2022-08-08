@@ -2,8 +2,8 @@ package rythmgame2.common
 
 import ecs.Component
 import ecs.ComponentKey
-import util.Matrix3x3
-import util.Vector2
+import space.Matrix3x3
+import space.Vector2
 import kotlin.math.cos
 import kotlin.math.sin
 

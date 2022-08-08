@@ -1,6 +1,6 @@
 package engine.application.events
 
-import util.Vector2
+import space.Vector2
 
 //TODO: include which window it was sent from?
 @Suppress("PropertyName")

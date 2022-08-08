@@ -7,7 +7,7 @@ import ecs.SystemType
 import rythmgame2.common.InputComp
 import rythmgame2.common.TransformComp
 import rythmgame2.common.VelocityComp
-import util.Vector2
+import space.Vector2
 
 object PlayerSys : System {
     override val type = SystemType.Update

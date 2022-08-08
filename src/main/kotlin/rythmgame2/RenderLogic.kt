@@ -13,9 +13,9 @@ import org.lwjgl.opengl.GL11.*
 import rythmgame2.common.*
 import rythmgame2.player.PlayerComp.Companion.createPlayer
 import rythmgame2.player.PlayerSys
-import util.Matrix3x3
-import util.Vector
-import util.Vector2
+import space.Matrix3x3
+import space.Vector
+import space.Vector2
 
 class RenderLogic : RenderLogic {
     lateinit var window: Window

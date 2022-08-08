@@ -7,11 +7,11 @@ import engine.files.FileSystem
 import misc.use
 import org.lwjgl.opengl.GL20C.*
 import org.lwjgl.opengl.GL32.GL_GEOMETRY_SHADER
-import util.Matrix3x3
-import util.Matrix4x4
+import space.Matrix3x3
+import space.Matrix4x4
 
-import util.Vector2
-import util.Vector3
+import space.Vector2
+import space.Vector3
 
 //If uniforms aren't being set, you may have forgotten to bind the shader
 class Shader {
