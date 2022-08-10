@@ -4,6 +4,7 @@ class Map2<T>(
     val map: Array<Array<T>>
 ) {
     inline val indices get() = Dim2(map.size, map[0].size)
+    inline val size get() = map.size * map[0].size
 
     operator fun get(ind: Coord2) = map[ind.x][ind.y]
     operator fun get(x: Int, y: Int) = map[x][y]

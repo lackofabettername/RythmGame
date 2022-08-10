@@ -46,18 +46,20 @@ class RenderLogic : RenderLogic {
     val walls by lazy { createWalls(ecs) }
     val temp = ecs.createEntity()
 
-    val ms = MarchingSquares(
-        map2(20, 20) { (x, y) ->
-            if (min(x, y) == 0 || max(x, y)+1 == 20) {
-                0f
-            } else {
-                (x / 20f) +
-                        (sin(y * 0.4f) * .2f) +
-                        (Random.nextFloat() - .5f) * 0.1f
-            }
-        },
-        0.5f
-    )
+    val ms = Random(20).let { rng ->
+        MarchingSquares(
+            map2(45, 30) { (x, y) ->
+                if (min(x, y) == 0 || max(x, y) + 1 == 50) {
+                    0f
+                } else {
+                    (x / 50f) +
+                            (sin(y * 0.3f) * .2f) +
+                            (rng.nextFloat() - .5f) * 0.2f
+                }
+            },
+            0.5f
+        )
+    }
 
     override fun initialize(window: Window) {
         this.window = window
@@ -84,6 +86,8 @@ class RenderLogic : RenderLogic {
         ecs.Systems += RenderSys
 
         ecs.Systems += InputSys //Add this last!
+
+        val msEntity = ecs.createEntity()
 
         //trigger lazy
         walls.id
@@ -112,14 +116,14 @@ class RenderLogic : RenderLogic {
             shadowBuffer.colorTexture
         )
 
-        ms.updateEdges()
-        val msEntity = ecs.createEntity()
-        ecs[msEntity] += TransformComp(Vector2(450f, 300f), 0f, Vector2(15f))
+        ms.getMesh()
+        ms.updateTriangles()
+        ecs[msEntity] += TransformComp(Vector2(), 0f, Vector2(20f))
         ecs[msEntity] += RenderComp(
             Mesh(
-                Mesh.Lines,
+                Mesh.Triangles,
                 Mesh.StaticDraw,
-                ms.edges.flatMap { it.toList() }.toTypedArray()
+                ms.triangles.flatMap { it.toList() }.toTypedArray()
                         as Array<Vector>,
             ),
             5,

@@ -229,6 +229,7 @@ class Vector2(
 
     //region Angles
     val heading get() = atan2(y, x)
+    val perpendicular get() = Vector2(-y, x)
 
     fun rotate(angle: Float): Vector2 {
         val sin = sin(angle)
